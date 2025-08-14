@@ -1,0 +1,32 @@
+# General
+.git
+.gitignore
+.gitattributes
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.swp
+*.tmp
+*.log
+.DS_Store
+
+# .NET build artifacts
+**/bin/
+**/obj/
+**/out/
+**/TestResults/
+
+# Node artifacts
+node_modules/
+
+# Coverage and reports
+coverage/
+**/.nyc_output/
+
+# Environment and local config
+.env
+**/*.pubxml
+**/*.pubxml.user
+**/Properties/launchSettings.json

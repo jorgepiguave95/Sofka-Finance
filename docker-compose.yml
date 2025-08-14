@@ -1,0 +1,72 @@
+name: SofkaFinance
+
+networks:
+  backend:
+    driver: bridge
+    internal: true
+
+services:
+  gateway:
+    build:
+      context: ./src/ApiGateway
+      dockerfile: Dockerfile
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+      Jwt__SigningKey: ${JWT_SIGNING_KEY}
+      Internal__Secret: ${INTERNAL_SECRET}
+    ports:
+      - "${GATEWAY_PORT}:8080"   
+    depends_on:
+      - customers.api
+      - accounts.api
+      - rabbitmq
+    networks: [backend]
+
+  customers.api:
+    build:
+      context: ./src/Services/Customers
+      dockerfile: Dockerfile
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+      Jwt__SigningKey: ${JWT_SIGNING_KEY}
+      Internal__Secret: ${INTERNAL_SECRET}
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__User: ${RABBITMQ_USER}
+      RabbitMQ__Password: ${RABBITMQ_PASS}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks: [backend]
+
+  accounts.api:
+    build:
+      context: ./src/Services/Account
+      dockerfile: Dockerfile
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+      Jwt__SigningKey: ${JWT_SIGNING_KEY}
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__User: ${RABBITMQ_USER}
+      RabbitMQ__Password: ${RABBITMQ_PASS}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks: [backend]
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [backend]

@@ -3,25 +3,20 @@ name: SofkaFinance
 networks:
   backend:
     driver: bridge
-    internal: true
+  database:
+    driver: bridge
 
 services:
-  gateway:
-    build:
-      context: ./src/ApiGateway
-      dockerfile: Dockerfile
+  rabbitmq:
+    image: rabbitmq:3-management
     environment:
-      ASPNETCORE_URLS: http://+:8080
-      Jwt__Issuer: ${JWT_ISSUER}
-      Jwt__Audience: ${JWT_AUDIENCE}
-      Jwt__SigningKey: ${JWT_SIGNING_KEY}
-      Internal__Secret: ${INTERNAL_SECRET}
-    ports:
-      - "${GATEWAY_PORT}:8080"   
-    depends_on:
-      - customers.api
-      - accounts.api
-      - rabbitmq
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks: [backend]
 
   customers.api:
@@ -29,11 +24,7 @@ services:
       context: ./src/Services/Customers
       dockerfile: Dockerfile
     environment:
-      ASPNETCORE_URLS: http://+:8080
-      Jwt__Issuer: ${JWT_ISSUER}
-      Jwt__Audience: ${JWT_AUDIENCE}
-      Jwt__SigningKey: ${JWT_SIGNING_KEY}
-      Internal__Secret: ${INTERNAL_SECRET}
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
       RabbitMQ__Host: rabbitmq
       RabbitMQ__User: ${RABBITMQ_USER}
       RabbitMQ__Password: ${RABBITMQ_PASS}
@@ -47,10 +38,7 @@ services:
       context: ./src/Services/Account
       dockerfile: Dockerfile
     environment:
-      ASPNETCORE_URLS: http://+:8080
-      Jwt__Issuer: ${JWT_ISSUER}
-      Jwt__Audience: ${JWT_AUDIENCE}
-      Jwt__SigningKey: ${JWT_SIGNING_KEY}
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
       RabbitMQ__Host: rabbitmq
       RabbitMQ__User: ${RABBITMQ_USER}
       RabbitMQ__Password: ${RABBITMQ_PASS}
@@ -59,14 +47,38 @@ services:
         condition: service_healthy
     networks: [backend]
 
-  rabbitmq:
-    image: rabbitmq:3-management
+  gateway:
+    build:
+      context: ./src/ApiGateway
+      dockerfile: Dockerfile
+    ports:
+      - "${GATEWAY_PORT}:8080"
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__User: ${RABBITMQ_USER}
+      RabbitMQ__Password: ${RABBITMQ_PASS}
+    depends_on:
+      customers.api:
+        condition: service_started
+      accounts.api:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
     networks: [backend]
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest # Licencia permitida en desarrollo
+    container_name: sqlserver
+    ports:
+      - "${MSSQL_PORT}:1433"
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD}"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    restart: always
+    networks: [database]
+
+volumes:
+  sqlserver-data:

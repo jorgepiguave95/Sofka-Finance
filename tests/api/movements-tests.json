@@ -1,0 +1,99 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "swaggerUrl": "http://localhost:3000/swagger",
+  "movementTests": {
+    "deposit": {
+      "method": "POST",
+      "endpoint": "/api/movimientos/{accountId}/deposito",
+      "description": "Realizar un depósito",
+      "url": "http://localhost:3000/api/movimientos/660e8400-e29b-41d4-a716-446655440000/deposito",
+      "pathParams": {
+        "accountId": "660e8400-e29b-41d4-a716-446655440000"
+      },
+      "body": {
+        "amount": 1000.0,
+        "concept": "Depósito inicial"
+      },
+      "expectedStatus": 200,
+      "expectedResponse": {
+        "message": "Deposito realizado exitosamente"
+      }
+    },
+    "withdraw": {
+      "method": "POST",
+      "endpoint": "/api/movimientos/{accountId}/retiro",
+      "description": "Realizar un retiro",
+      "url": "http://localhost:3000/api/movimientos/660e8400-e29b-41d4-a716-446655440000/retiro",
+      "pathParams": {
+        "accountId": "660e8400-e29b-41d4-a716-446655440000"
+      },
+      "body": {
+        "amount": 500.0,
+        "concept": "Retiro ATM"
+      },
+      "expectedStatus": 200,
+      "expectedResponse": {
+        "message": "Retiro realizado exitosamente"
+      }
+    },
+    "transfer": {
+      "method": "POST",
+      "endpoint": "/api/movimientos/transferencia",
+      "description": "Realizar una transferencia",
+      "url": "http://localhost:3000/api/movimientos/transferencia",
+      "body": {
+        "fromAccountId": "660e8400-e29b-41d4-a716-446655440000",
+        "toAccountId": "770e8400-e29b-41d4-a716-446655440000",
+        "amount": 250.0,
+        "concept": "Transferencia entre cuentas"
+      },
+      "expectedStatus": 200,
+      "expectedResponse": {
+        "message": "Transferencia realizada exitosamente"
+      }
+    },
+    "getMovementsByAccount": {
+      "method": "GET",
+      "endpoint": "/api/movimientos/cuenta/{accountId}",
+      "description": "Obtener movimientos por cuenta",
+      "url": "http://localhost:3000/api/movimientos/cuenta/660e8400-e29b-41d4-a716-446655440000",
+      "pathParams": {
+        "accountId": "660e8400-e29b-41d4-a716-446655440000"
+      },
+      "expectedStatus": 200,
+      "expectedResponse": {
+        "message": "Movimientos obtenidos exitosamente",
+        "movimientos": []
+      }
+    },
+    "getMovementReport": {
+      "method": "GET",
+      "endpoint": "/api/movimientos/reportes",
+      "description": "Obtener reporte de movimientos",
+      "url": "http://localhost:3000/api/movimientos/reportes?fechaInicio=2025-01-01&fechaFin=2025-12-31",
+      "queryParams": {
+        "fechaInicio": "2025-01-01",
+        "fechaFin": "2025-12-31"
+      },
+      "body": {
+        "idCliente": "550e8400-e29b-41d4-a716-446655440000"
+      },
+      "expectedStatus": 200,
+      "expectedResponse": {
+        "message": "Reporte de movimientos generado exitosamente",
+        "cliente": {},
+        "movimientos": [],
+        "totalDepositos": 0.0,
+        "totalRetiros": 0.0,
+        "montoNeto": 0.0
+      }
+    }
+  },
+  "samples": {
+    "depositCommand": "curl -X POST \"http://localhost:3000/api/movimientos/660e8400-e29b-41d4-a716-446655440000/deposito\" -H \"Content-Type: application/json\" -d '{\"amount\":1000.00,\"concept\":\"Depósito inicial\"}'",
+    "withdrawCommand": "curl -X POST \"http://localhost:3000/api/movimientos/660e8400-e29b-41d4-a716-446655440000/retiro\" -H \"Content-Type: application/json\" -d '{\"amount\":500.00,\"concept\":\"Retiro ATM\"}'",
+    "transferCommand": "curl -X POST \"http://localhost:3000/api/movimientos/transferencia\" -H \"Content-Type: application/json\" -d '{\"fromAccountId\":\"660e8400-e29b-41d4-a716-446655440000\",\"toAccountId\":\"770e8400-e29b-41d4-a716-446655440000\",\"amount\":250.00,\"concept\":\"Transferencia entre cuentas\"}'",
+    "getMovementsByAccountCommand": "curl -X GET \"http://localhost:3000/api/movimientos/cuenta/660e8400-e29b-41d4-a716-446655440000\"",
+    "getMovementReportCommand": "curl -X GET \"http://localhost:3000/api/movimientos/reportes?fechaInicio=2025-01-01&fechaFin=2025-12-31\" -H \"Content-Type: application/json\" -d '{\"idCliente\":\"550e8400-e29b-41d4-a716-446655440000\"}'"
+  }
+}

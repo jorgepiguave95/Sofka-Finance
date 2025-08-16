@@ -1,0 +1,36 @@
+{
+  "info": {
+    "title": "SofkaFinance Auth API Tests",
+    "description": "Pruebas para los endpoints de autenticación del API Gateway",
+    "baseUrl": "http://localhost:3000",
+    "swaggerUrl": "http://localhost:3000/swagger"
+  },
+  "authTests": {
+    "login": {
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "description": "Prueba de inicio de sesión",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "email": "test@test.com",
+        "password": "123456"
+      },
+      "expectedStatus": 200,
+      "expectedResponse": {
+        "message": "Inicio de sesion exitoso",
+        "auth": {
+          "correo": "test@test.com",
+          "token": "string",
+          "fechaExpiracion": "2025-08-17T00:00:00Z",
+          "idCliente": "guid"
+        }
+      }
+    }
+  },
+  "samples": {
+    "curlCommand": "curl -X POST \"http://localhost:3000/api/auth/login\" -H \"Content-Type: application/json\" -d '{\"email\":\"test@test.com\",\"password\":\"123456\"}'",
+    "powershellCommand": "Invoke-RestMethod -Uri 'http://localhost:3000/api/auth/login' -Method POST -ContentType 'application/json' -Body '{\"email\":\"test@test.com\",\"password\":\"123456\"}'"
+  }
+}

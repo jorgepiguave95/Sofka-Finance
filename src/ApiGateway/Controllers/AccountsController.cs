@@ -9,118 +9,133 @@ namespace ApiGateway.Controllers;
 [Route("api/cuentas")]
 public class AccountsController : ControllerBase
 {
-    private readonly IMessagingClient _messagingClient;
+    private readonly IMessagingClient _client;
 
-    public AccountsController(IMessagingClient messagingClient)
+    public AccountsController(IMessagingClient client)
     {
-        _messagingClient = messagingClient;
+        _client = client;
     }
 
     [HttpGet]
-    public async Task<ActionResult<AccountOperationResponse>> GetAllAccounts()
+    public async Task<ActionResult<AccountsList>> GetAllAccounts()
     {
         try
         {
             var operationId = Guid.NewGuid();
             var query = new GetAllAccountsQuery(operationId);
 
-            await _messagingClient.SendAsync("finance.accounts", "account.getAll", query);
+            var contractResponse = await _client.RequestAsync<GetAllAccountsQuery, GetAllAccountsResponse>(query);
 
-            return Accepted(new AccountOperationResponse(
-                OperationId: operationId,
-                Operation: "GetAllAccounts",
-                Message: "Solicitud para obtener todas las cuentas fue excitosa"
-            ));
+            if (contractResponse.Success)
+            {
+                var gatewayResponse = new AccountsList(
+                    Message: "Cuentas obtenidas exitosamente",
+                    Cuentas: Array.Empty<AccountEntity>()
+                );
+
+                return Ok(gatewayResponse);
+            }
+
+            return BadRequest(new Response(contractResponse.Message));
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new AccountOperationResponse(
-                OperationId: Guid.NewGuid(),
-                Operation: "GetAllAccounts",
-                Message: $"Error processing accounts query: {ex.Message}",
-                StatusCode: 500
-            ));
+            return StatusCode(500, new Response($"Error procesando consulta de cuentas: {ex.Message}"));
         }
     }
 
     [HttpGet("{accountId:guid}")]
-    public async Task<ActionResult<AccountOperationResponse>> GetAccountById(Guid accountId)
+    public async Task<ActionResult<Account>> GetAccountById(Guid accountId)
     {
         try
         {
             var operationId = Guid.NewGuid();
             var query = new GetAccountByIdQuery(operationId, accountId);
 
-            await _messagingClient.SendAsync("finance.accounts", "account.getById", query);
+            var contractResponse = await _client.RequestAsync<GetAccountByIdQuery, GetAccountResponse>(query);
 
-            return Accepted(new AccountOperationResponse(
-                OperationId: operationId,
-                Operation: "GetAccountById",
-                Message: $"Solicitud para obtener la cuenta '{accountId}' fue exitosa"
-            ));
+            if (contractResponse.Success)
+            {
+                var gatewayResponse = new Account(
+                    Message: "Cuenta obtenida exitosamente",
+                    Cuenta: new AccountEntity(
+                        Id: accountId,
+                        IdCliente: Guid.NewGuid(),
+                        NumeroCuenta: "ACC-20250815-AAAAAAAA",
+                        TipoCuenta: "Ahorros",
+                        Saldo: 1000.00m,
+                        EstaActiva: true,
+                        FechaCreacion: DateTime.UtcNow
+                    )
+                );
+
+                return Ok(gatewayResponse);
+            }
+
+            return BadRequest(new Response(contractResponse.Message));
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new AccountOperationResponse(
-                OperationId: Guid.NewGuid(),
-                Operation: "GetAccountById",
-                Message: $"Error procesando consulta de cuenta: {ex.Message}",
-                StatusCode: 500
-            ));
+            return StatusCode(500, new Response($"Error procesando consulta de cuenta: {ex.Message}"));
         }
     }
 
     [HttpPost]
-    public async Task<ActionResult<AccountOperationResponse>> CreateAccount([FromBody] CreateAccountDto dto)
+    public async Task<ActionResult<Account>> CreateAccount([FromBody] CreateAccountDto dto)
     {
         try
         {
             var operationId = Guid.NewGuid();
             var command = new CreateAccountCommand(operationId, dto.CustomerId, dto.AccountType);
 
-            await _messagingClient.SendAsync("finance.accounts", "account.create", command);
+            var contractResponse = await _client.RequestAsync<CreateAccountCommand, CreateAccountResponse>(command);
 
-            return Accepted(new AccountOperationResponse(
-                OperationId: operationId,
-                Operation: "CreateAccount",
-                Message: "Solicitud de creacion de cuenta fue exitosa"
-            ));
+            if (contractResponse.Success && contractResponse.AccountId.HasValue)
+            {
+                var gatewayResponse = new Account(
+                    Message: "Cuenta creada exitosamente",
+                    Cuenta: new AccountEntity(
+                        Id: contractResponse.AccountId.Value,
+                        IdCliente: dto.CustomerId,
+                        NumeroCuenta: $"ACC-{DateTime.Now:yyyyMMdd}-{Guid.NewGuid().ToString()[..8].ToUpper()}",
+                        TipoCuenta: dto.AccountType,
+                        Saldo: 0.00m,
+                        EstaActiva: true,
+                        FechaCreacion: DateTime.UtcNow
+                    )
+                );
+
+                return Ok(gatewayResponse);
+            }
+
+            return BadRequest(new Response(contractResponse.Message));
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new AccountOperationResponse(
-                OperationId: Guid.NewGuid(),
-                Operation: "CreateAccount",
-                Message: $"Error procesando creacion de cuenta: {ex.Message}",
-                StatusCode: 500
-            ));
+            return StatusCode(500, new Response($"Error procesando creacion de cuenta: {ex.Message}"));
         }
     }
 
     [HttpDelete("{accountId:guid}")]
-    public async Task<ActionResult<AccountOperationResponse>> CloseAccount(Guid accountId)
+    public async Task<ActionResult<Response>> CloseAccount(Guid accountId)
     {
         try
         {
             var operationId = Guid.NewGuid();
             var command = new CloseAccountCommand(operationId, accountId);
 
-            await _messagingClient.SendAsync("finance.accounts", "account.close", command);
+            var contractResponse = await _client.RequestAsync<CloseAccountCommand, CloseAccountResponse>(command);
 
-            return Accepted(new AccountOperationResponse(
-                OperationId: operationId,
-                Operation: "CloseAccount",
-                Message: $"Solicitud de cierre de cuenta '{accountId}' fue exitosa"
-            ));
+            if (contractResponse.Success)
+            {
+                return Ok(new Response("Cuenta cerrada exitosamente"));
+            }
+
+            return BadRequest(new Response(contractResponse.Message));
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new AccountOperationResponse(
-                OperationId: Guid.NewGuid(),
-                Operation: "CloseAccount",
-                Message: $"Error procesando cierre de cuenta: {ex.Message}",
-                StatusCode: 500
-            ));
+            return StatusCode(500, new Response($"Error procesando cierre de cuenta: {ex.Message}"));
         }
     }
 }

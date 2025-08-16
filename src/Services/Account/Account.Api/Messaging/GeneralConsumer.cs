@@ -13,6 +13,7 @@ public class GeneralConsumer :
     IConsumer<TransferCommand>,
     IConsumer<GetAccountByIdQuery>,
     IConsumer<GetAccountsByCustomerQuery>,
+    IConsumer<GetAllAccountsQuery>,
     IConsumer<GetMovementsByAccountQuery>,
     IConsumer<GetMovementsReportQuery>
 {
@@ -25,6 +26,7 @@ public class GeneralConsumer :
     {
         _accountsController = accountsController;
         _movementsController = movementsController;
+
     }
 
     // Account Commands
@@ -32,14 +34,18 @@ public class GeneralConsumer :
     {
         try
         {
-            Console.WriteLine($"Processing CreateAccountCommand: {context.Message.OperationId}");
+            Console.WriteLine($"*** RECEIVED CreateAccountCommand: {context.Message.OperationId} ***");
+            Console.WriteLine($"CustomerId: {context.Message.CustomerId}, AccountType: {context.Message.AccountType}");
 
             var result = await _accountsController.Create(context.Message);
 
+            Console.WriteLine($"*** SENDING CreateAccount Response: {result.Success} ***");
             await context.RespondAsync(result);
+            Console.WriteLine($"*** RESPONSE SENT ***");
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"*** ERROR in CreateAccount: {ex.Message} ***");
             await context.RespondAsync(new CreateAccountResponse(
                 OperationId: context.Message.OperationId,
                 Success: false,
@@ -71,20 +77,59 @@ public class GeneralConsumer :
     // Movement Commands
     public async Task Consume(ConsumeContext<DepositCommand> context)
     {
-        Console.WriteLine($"Processing DepositCommand: {context.Message.OperationId}");
-        await _movementsController.Deposit(context.Message);
+        try
+        {
+            Console.WriteLine($"Processing DepositCommand: {context.Message.OperationId}");
+            var result = await _movementsController.Deposit(context.Message);
+            await context.RespondAsync(result);
+        }
+        catch (Exception ex)
+        {
+            await context.RespondAsync(new DepositResponse(
+                OperationId: context.Message.OperationId,
+                Success: false,
+                Message: ex.Message,
+                MovementId: null
+            ));
+        }
     }
 
     public async Task Consume(ConsumeContext<WithdrawCommand> context)
     {
-        Console.WriteLine($"Processing WithdrawCommand: {context.Message.OperationId}");
-        await _movementsController.Withdraw(context.Message);
+        try
+        {
+            Console.WriteLine($"Processing WithdrawCommand: {context.Message.OperationId}");
+            var result = await _movementsController.Withdraw(context.Message);
+            await context.RespondAsync(result);
+        }
+        catch (Exception ex)
+        {
+            await context.RespondAsync(new WithdrawResponse(
+                OperationId: context.Message.OperationId,
+                Success: false,
+                Message: ex.Message,
+                MovementId: null
+            ));
+        }
     }
 
     public async Task Consume(ConsumeContext<TransferCommand> context)
     {
-        Console.WriteLine($"Processing TransferCommand: {context.Message.OperationId}");
-        await _movementsController.Transfer(context.Message);
+        try
+        {
+            Console.WriteLine($"Processing TransferCommand: {context.Message.OperationId}");
+            var result = await _movementsController.Transfer(context.Message);
+            await context.RespondAsync(result);
+        }
+        catch (Exception ex)
+        {
+            await context.RespondAsync(new TransferResponse(
+                OperationId: context.Message.OperationId,
+                Success: false,
+                Message: ex.Message,
+                MovementId: null
+            ));
+        }
     }
 
     // Account Queries
@@ -148,13 +193,39 @@ public class GeneralConsumer :
     // Movement Queries
     public async Task Consume(ConsumeContext<GetMovementsByAccountQuery> context)
     {
-        Console.WriteLine($"Processing GetMovementsByAccountQuery");
-        await _movementsController.GetByAccount(context.Message);
+        try
+        {
+            Console.WriteLine($"Processing GetMovementsByAccountQuery");
+            var result = await _movementsController.GetByAccount(context.Message);
+            await context.RespondAsync(result);
+        }
+        catch (Exception ex)
+        {
+            await context.RespondAsync(new GetMovementsByAccountResponse(
+                OperationId: context.Message.OperationId,
+                Success: false,
+                Message: ex.Message,
+                Movements: null
+            ));
+        }
     }
 
     public async Task Consume(ConsumeContext<GetMovementsReportQuery> context)
     {
-        Console.WriteLine($"Processing GetMovementsReportQuery");
-        await _movementsController.GetReport(context.Message);
+        try
+        {
+            Console.WriteLine($"Processing GetMovementsReportQuery");
+            var result = await _movementsController.GetReport(context.Message);
+            await context.RespondAsync(result);
+        }
+        catch (Exception ex)
+        {
+            await context.RespondAsync(new GetMovementsReportResponse(
+                OperationId: context.Message.OperationId,
+                Success: false,
+                Message: ex.Message,
+                Report: null
+            ));
+        }
     }
 }

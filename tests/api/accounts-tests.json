@@ -1,0 +1,81 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "swaggerUrl": "http://localhost:3000/swagger",
+  "accountTests": {
+    "createAccount": {
+      "method": "POST",
+      "endpoint": "/api/cuentas",
+      "description": "Crear una nueva cuenta",
+      "url": "http://localhost:3000/api/cuentas",
+      "body": {
+        "customerId": "550e8400-e29b-41d4-a716-446655440000",
+        "accountType": "Ahorros"
+      },
+      "expectedStatus": 200,
+      "expectedResponse": {
+        "message": "Cuenta creada exitosamente",
+        "cuenta": {
+          "id": "guid",
+          "idCliente": "550e8400-e29b-41d4-a716-446655440000",
+          "numeroCuenta": "ACC-20250816-XXXXXXXX",
+          "tipoCuenta": "Ahorros",
+          "saldo": 0.0,
+          "estaActiva": true,
+          "fechaCreacion": "2025-08-16T00:00:00Z"
+        }
+      }
+    },
+    "getAllAccounts": {
+      "method": "GET",
+      "endpoint": "/api/cuentas",
+      "description": "Obtener todas las cuentas",
+      "url": "http://localhost:3000/api/cuentas",
+      "expectedStatus": 200,
+      "expectedResponse": {
+        "message": "Cuentas obtenidas exitosamente",
+        "cuentas": []
+      }
+    },
+    "getAccountById": {
+      "method": "GET",
+      "endpoint": "/api/cuentas/{accountId}",
+      "description": "Obtener cuenta por ID",
+      "url": "http://localhost:3000/api/cuentas/660e8400-e29b-41d4-a716-446655440000",
+      "pathParams": {
+        "accountId": "660e8400-e29b-41d4-a716-446655440000"
+      },
+      "expectedStatus": 200,
+      "expectedResponse": {
+        "message": "Cuenta obtenida exitosamente",
+        "cuenta": {
+          "id": "660e8400-e29b-41d4-a716-446655440000",
+          "idCliente": "guid",
+          "numeroCuenta": "ACC-20250815-AAAAAAAA",
+          "tipoCuenta": "Ahorros",
+          "saldo": 1000.0,
+          "estaActiva": true,
+          "fechaCreacion": "2025-08-16T00:00:00Z"
+        }
+      }
+    },
+    "closeAccount": {
+      "method": "DELETE",
+      "endpoint": "/api/cuentas/{accountId}",
+      "description": "Cerrar cuenta",
+      "url": "http://localhost:3000/api/cuentas/660e8400-e29b-41d4-a716-446655440000",
+      "pathParams": {
+        "accountId": "660e8400-e29b-41d4-a716-446655440000"
+      },
+      "expectedStatus": 200,
+      "expectedResponse": {
+        "message": "Cuenta cerrada exitosamente"
+      }
+    }
+  },
+  "samples": {
+    "createAccountCommand": "curl -X POST \"http://localhost:3000/api/cuentas\" -H \"Content-Type: application/json\" -d '{\"customerId\":\"550e8400-e29b-41d4-a716-446655440000\",\"accountType\":\"Ahorros\"}'",
+    "getAllAccountsCommand": "curl -X GET \"http://localhost:3000/api/cuentas\"",
+    "getAccountByIdCommand": "curl -X GET \"http://localhost:3000/api/cuentas/660e8400-e29b-41d4-a716-446655440000\"",
+    "closeAccountCommand": "curl -X DELETE \"http://localhost:3000/api/cuentas/660e8400-e29b-41d4-a716-446655440000\""
+  }
+}

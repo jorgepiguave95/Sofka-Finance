@@ -1,0 +1,97 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "swaggerUrl": "http://localhost:3000/swagger",
+  "customerTests": {
+    "createCustomer": {
+      "method": "POST",
+      "endpoint": "/api/clientes",
+      "description": "Crear un nuevo cliente",
+      "url": "http://localhost:3000/api/clientes",
+      "body": {
+        "name": "Juan Perez",
+        "email": "juan.perez@test.com",
+        "phone": "123456789",
+        "address": "Calle 123",
+        "identification": "12345678",
+        "gender": "Masculino",
+        "age": 30,
+        "password": "password123"
+      },
+      "expectedStatus": 200,
+      "expectedResponse": {
+        "message": "Cliente creado exitosamente",
+        "cliente": {
+          "id": "guid",
+          "nombre": "Juan Perez",
+          "correo": "juan.perez@test.com",
+          "telefono": "123456789"
+        }
+      }
+    },
+    "getCustomers": {
+      "method": "GET",
+      "endpoint": "/api/clientes",
+      "description": "Obtener todos los clientes",
+      "url": "http://localhost:3000/api/clientes",
+      "expectedStatus": 200,
+      "expectedResponse": {
+        "message": "Clientes obtenidos exitosamente",
+        "clientes": []
+      }
+    },
+    "getCustomerById": {
+      "method": "GET",
+      "endpoint": "/api/clientes/{id}",
+      "description": "Obtener cliente por ID",
+      "url": "http://localhost:3000/api/clientes/550e8400-e29b-41d4-a716-446655440000",
+      "pathParams": {
+        "id": "550e8400-e29b-41d4-a716-446655440000"
+      },
+      "expectedStatus": 200,
+      "expectedResponse": {
+        "message": "Cliente obtenido exitosamente",
+        "cliente": {}
+      }
+    },
+    "updateCustomer": {
+      "method": "PUT",
+      "endpoint": "/api/clientes/{id}",
+      "description": "Actualizar cliente",
+      "url": "http://localhost:3000/api/clientes/550e8400-e29b-41d4-a716-446655440000",
+      "pathParams": {
+        "id": "550e8400-e29b-41d4-a716-446655440000"
+      },
+      "body": {
+        "name": "Juan Perez Actualizado",
+        "email": "juan.updated@test.com",
+        "phone": "987654321",
+        "address": "Nueva Direccion 456"
+      },
+      "expectedStatus": 200,
+      "expectedResponse": {
+        "message": "Cliente actualizado exitosamente",
+        "cliente": {}
+      }
+    },
+    "deleteCustomer": {
+      "method": "DELETE",
+      "endpoint": "/api/clientes/{id}",
+      "description": "Eliminar cliente",
+      "url": "http://localhost:3000/api/clientes/550e8400-e29b-41d4-a716-446655440000",
+      "pathParams": {
+        "id": "550e8400-e29b-41d4-a716-446655440000"
+      },
+      "expectedStatus": 200,
+      "expectedResponse": {
+        "message": "Cliente eliminado exitosamente"
+      }
+    }
+  },
+  "samples": {
+    "createCustomerCommand": "curl -X POST \"http://localhost:3000/api/clientes\" -H \"Content-Type: application/json\" -d '{\"name\":\"Juan Perez\",\"email\":\"juan.perez@test.com\",\"phone\":\"123456789\",\"address\":\"Calle 123\",\"identification\":\"12345678\",\"gender\":\"Masculino\",\"age\":30,\"password\":\"password123\"}'",
+    "getCustomersCommand": "curl -X GET \"http://localhost:3000/api/clientes\"",
+    "getCustomerByIdCommand": "curl -X GET \"http://localhost:3000/api/clientes/550e8400-e29b-41d4-a716-446655440000\"",
+    "updateCustomerCommand": "curl -X PUT \"http://localhost:3000/api/clientes/550e8400-e29b-41d4-a716-446655440000\" -H \"Content-Type: application/json\" -d '{\"name\":\"Juan Perez Actualizado\",\"email\":\"juan.updated@test.com\",\"phone\":\"987654321\",\"address\":\"Nueva Direccion 456\"}'",
+    "deleteCustomerCommand": "curl -X DELETE \"http://localhost:3000/api/clientes/550e8400-e29b-41d4-a716-446655440000\""
+  }
+}

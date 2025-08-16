@@ -1,36 +1,88 @@
 namespace ApiGateway.Dtos;
 
-public record OperationResponse(
-    Guid OperationId,
-    string Message = "Operation accepted and will be processed",
-    int StatusCode = 202
+// Respuestas base del Gateway
+public record Response(
+    string Message = "Operacion realizada con exito"
 );
 
-public record CustomerOperationResponse(
-    Guid OperationId,
-    string Operation,
-    string Message = "Customer operation accepted and will be processed",
-    int StatusCode = 202
-) : OperationResponse(OperationId, Message, StatusCode);
+// Entidades para respuestas del Gateway
+public record CustomerEntity(
+    Guid Id,
+    string Nombre,
+    string Correo,
+    string Telefono,
+    string Direccion,
+    string Identificacion,
+    string Genero,
+    int Edad,
+    DateTime FechaCreacion
+);
 
-public record MovementOperationResponse(
-    Guid OperationId,
-    string Operation,
-    Guid? AccountId = null,
-    string Message = "Movement operation accepted and will be processed",
-    int StatusCode = 202
-) : OperationResponse(OperationId, Message, StatusCode);
+public record AccountEntity(
+    Guid Id,
+    Guid IdCliente,
+    string NumeroCuenta,
+    string TipoCuenta,
+    decimal Saldo,
+    bool EstaActiva,
+    DateTime FechaCreacion
+);
 
-public record AuthOperationResponse(
-    Guid OperationId,
-    string Operation,
-    string Message = "Authentication operation accepted and will be processed",
-    int StatusCode = 202
-) : OperationResponse(OperationId, Message, StatusCode);
+public record MovementEntity(
+    Guid Id,
+    Guid IdCuenta,
+    string Tipo,
+    decimal Monto,
+    string Concepto,
+    decimal SaldoAnterior,
+    decimal SaldoNuevo,
+    DateTime FechaCreacion
+);
 
-public record AccountOperationResponse(
-    Guid OperationId,
-    string Operation,
-    string Message = "Account operation accepted and will be processed",
-    int StatusCode = 202
-) : OperationResponse(OperationId, Message, StatusCode);
+public record AuthEntity(
+    string Correo,
+    string Token,
+    DateTime FechaExpiracion,
+    Guid IdCliente
+);
+
+// Respuestas específicas del Gateway con datos
+public record Customer(
+    string Message,
+    CustomerEntity Cliente
+) : Response(Message);
+
+public record Account(
+    string Message,
+    AccountEntity Cuenta
+) : Response(Message);
+
+public record Login(
+    string Message,
+    AuthEntity Auth
+) : Response(Message);
+
+public record CustomersList(
+    string Message,
+    CustomerEntity[] Clientes
+) : Response(Message);
+
+public record AccountsList(
+    string Message,
+    AccountEntity[] Cuentas
+) : Response(Message);
+
+public record MovementsList(
+    string Message,
+    MovementEntity[] Movimientos
+) : Response(Message);
+
+
+public record MovementReport(
+    string Message,
+    CustomerEntity Cliente,
+    MovementEntity[] Movimientos,
+    decimal TotalDepositos,
+    decimal TotalRetiros,
+    decimal MontoNeto
+) : Response(Message);

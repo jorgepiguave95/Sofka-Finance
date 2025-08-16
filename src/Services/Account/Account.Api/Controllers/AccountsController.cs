@@ -1,29 +1,22 @@
 namespace Account.Api.Controllers;
 
 using Account.Api.Dtos;
-using Account.Api.Messaging;
 using SofkaFinance.Contracts.Accounts;
 public class AccountsController
 {
-    private readonly IMessagingClient _messagingClient;
-
-    public AccountsController(IMessagingClient messagingClient)
+    public AccountsController()
     {
-        _messagingClient = messagingClient;
     }
 
     public async Task<GetAccountResponse> GetById(GetAccountByIdQuery query)
     {
         try
         {
-            // TODO: Implementar lógica de negocio real con base de datos
+            await Task.Delay(1);
 
-            Console.WriteLine($"GetById query processed for AccountId: {query.AccountId}");
-
-            // Simular datos por ahora (reemplazar con lógica real de BD)
             var account = new AccountDto(
                 AccountId: query.AccountId,
-                CustomerId: Guid.NewGuid(), // Esto vendría de la BD
+                CustomerId: Guid.NewGuid(),
                 AccountNumber: $"ACC-20250815-{query.AccountId.ToString()[..8].ToUpper()}",
                 AccountType: "Savings",
                 Balance: 1500.00m,
@@ -40,7 +33,6 @@ public class AccountsController
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error getting account: {ex.Message}");
             return new GetAccountResponse(
                 OperationId: query.OperationId,
                 Success: false,
@@ -54,9 +46,8 @@ public class AccountsController
     {
         try
         {
-            Console.WriteLine($"GetByCustomer query processed for CustomerId: {query.CustomerId}");
+            await Task.Delay(1);
 
-            // Simular datos (reemplazar con lógica real de BD)
             var accounts = new List<AccountDto>
             {
                 new AccountDto(
@@ -88,7 +79,6 @@ public class AccountsController
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error getting accounts by customer: {ex.Message}");
             return new GetAccountsByCustomerResponse(
                 OperationId: query.OperationId,
                 Success: false,
@@ -102,15 +92,11 @@ public class AccountsController
     {
         try
         {
-            // TODO: Implementar lógica de creación de cuenta
-
-            // Generar un AccountId único para la nueva cuenta
             var accountId = Guid.NewGuid();
             var accountNumber = $"ACC-{DateTime.UtcNow:yyyyMMdd}-{accountId.ToString()[..8].ToUpper()}";
 
-            Console.WriteLine($"Account {accountId} created for customer {command.CustomerId}");
+            await Task.Delay(1);
 
-            // Retornar respuesta exitosa
             return new CreateAccountResponse(
                 OperationId: command.OperationId,
                 Success: true,
@@ -120,7 +106,6 @@ public class AccountsController
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error creating account: {ex.Message}");
             return new CreateAccountResponse(
                 OperationId: command.OperationId,
                 Success: false,
@@ -134,9 +119,7 @@ public class AccountsController
     {
         try
         {
-            Console.WriteLine($"Close account command processed for AccountId: {command.AccountId}");
-
-            // TODO: Implementar lógica real de cierre de cuenta
+            await Task.Delay(1);
 
             return new CloseAccountResponse(
                 OperationId: command.OperationId,
@@ -147,7 +130,6 @@ public class AccountsController
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error closing account: {ex.Message}");
             return new CloseAccountResponse(
                 OperationId: command.OperationId,
                 Success: false,
@@ -161,12 +143,8 @@ public class AccountsController
     {
         try
         {
-            Console.WriteLine($"Processing GetAllAccounts - OperationId: {query.OperationId}");
-
-            // Simular espera asíncrona
             await Task.Delay(1);
 
-            // Simulamos datos de cuentas
             var accounts = new List<AccountDto>
             {
                 new AccountDto(
@@ -207,7 +185,6 @@ public class AccountsController
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error getting all accounts: {ex.Message}");
             return new GetAllAccountsResponse(
                 OperationId: query.OperationId,
                 Success: false,

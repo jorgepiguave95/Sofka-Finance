@@ -9,11 +9,8 @@ public class GeneralConsumer :
     IConsumer<CreateCustomerCommand>,
     IConsumer<UpdateCustomerCommand>,
     IConsumer<DeleteCustomerCommand>,
-    IConsumer<ActivateCustomerCommand>,
-    IConsumer<DeactivateCustomerCommand>,
     IConsumer<GetCustomerByIdQuery>,
     IConsumer<GetAllCustomersQuery>,
-    IConsumer<SearchCustomersQuery>,
     IConsumer<LoginCommand>
 {
     private readonly CustomersController _customersController;
@@ -25,62 +22,44 @@ public class GeneralConsumer :
     {
         _customersController = customersController;
         _authController = authController;
+    }
 
-        Console.WriteLine("🚀 GeneralConsumer initialized - Ready to receive commands and queries");
-    }    // Customer Commands
+    // Customer Commands
     public async Task Consume(ConsumeContext<CreateCustomerCommand> context)
     {
-        Console.WriteLine($"Processing CreateCustomerCommand: {context.Message.OperationId}");
-        await _customersController.Create(context.Message);
+        var response = await _customersController.Create(context.Message);
+        await context.RespondAsync(response);
     }
 
     public async Task Consume(ConsumeContext<UpdateCustomerCommand> context)
     {
-        Console.WriteLine($"Processing UpdateCustomerCommand: {context.Message.OperationId}");
-        await _customersController.Update(context.Message);
+        var response = await _customersController.Update(context.Message);
+        await context.RespondAsync(response);
     }
 
     public async Task Consume(ConsumeContext<DeleteCustomerCommand> context)
     {
-        Console.WriteLine($"Processing DeleteCustomerCommand: {context.Message.OperationId}");
-        await _customersController.Delete(context.Message);
-    }
-
-    public async Task Consume(ConsumeContext<ActivateCustomerCommand> context)
-    {
-        Console.WriteLine($"Processing ActivateCustomerCommand: {context.Message.OperationId}");
-        await _customersController.Activate(context.Message);
-    }
-
-    public async Task Consume(ConsumeContext<DeactivateCustomerCommand> context)
-    {
-        Console.WriteLine($"Processing DeactivateCustomerCommand: {context.Message.OperationId}");
-        await _customersController.Deactivate(context.Message);
+        var response = await _customersController.Delete(context.Message);
+        await context.RespondAsync(response);
     }
 
     // Customer Queries
     public async Task Consume(ConsumeContext<GetCustomerByIdQuery> context)
     {
-        Console.WriteLine($"Processing GetCustomerByIdQuery");
-        await _customersController.GetById(context.Message);
+        var response = await _customersController.GetById(context.Message);
+        await context.RespondAsync(response);
     }
 
     public async Task Consume(ConsumeContext<GetAllCustomersQuery> context)
     {
-        Console.WriteLine($"Processing GetAllCustomersQuery");
-        await _customersController.GetAll(context.Message);
-    }
-
-    public async Task Consume(ConsumeContext<SearchCustomersQuery> context)
-    {
-        Console.WriteLine($"Processing SearchCustomersQuery");
-        await _customersController.Search(context.Message);
+        var response = await _customersController.GetAll(context.Message);
+        await context.RespondAsync(response);
     }
 
     // Auth Commands
     public async Task Consume(ConsumeContext<LoginCommand> context)
     {
-        Console.WriteLine($"Processing LoginCommand: {context.Message.OperationId}");
-        await _authController.Login(context.Message);
+        var response = await _authController.Login(context.Message);
+        await context.RespondAsync(response);
     }
 }

@@ -13,31 +13,35 @@ public class AuthController : ControllerBase
     public AuthController(IMessagingClient client) => _client = client;
 
     [HttpPost("login")]
-    public async Task<ActionResult<AuthOperationResponse>> Login([FromBody] LoginDto body)
+    public async Task<ActionResult<Login>> Login([FromBody] LoginDto body)
     {
         try
         {
             var operationId = Guid.NewGuid();
             var cmd = new LoginCommand(operationId, body.Email, body.Password);
-            await _client.SendAsync("finance.customers", "auth.login", cmd);
 
-            var response = new AuthOperationResponse(
-                OperationId: operationId,
-                Operation: "Login",
-                Message: $"Solicitud de inicio de sesion para usuario '{body.Email}' fue excitosa"
-            );
+            var contractResponse = await _client.RequestAsync<LoginCommand, LoginResponse>(cmd);
 
-            return Accepted(response);
+            if (contractResponse.Success)
+            {
+                var gatewayResponse = new Login(
+                    Message: "Inicio de sesion exitoso",
+                    Auth: new AuthEntity(
+                        Correo: contractResponse.CustomerEmail ?? "",
+                        Token: contractResponse.Token ?? "",
+                        FechaExpiracion: contractResponse.ExpiresAt ?? DateTime.UtcNow.AddHours(24),
+                        IdCliente: contractResponse.CustomerId ?? Guid.Empty
+                    )
+                );
+
+                return Ok(gatewayResponse);
+            }
+
+            return BadRequest(new Response(contractResponse.Message));
         }
         catch (Exception ex)
         {
-            var errorResponse = new AuthOperationResponse(
-                OperationId: Guid.Empty,
-                Operation: "Login",
-                Message: $"Error procesando inicio de sesion: {ex.Message}",
-                StatusCode: 500
-            );
-            return StatusCode(500, errorResponse);
+            return StatusCode(500, new Response($"Error procesando inicio de sesion: {ex.Message}"));
         }
     }
 }

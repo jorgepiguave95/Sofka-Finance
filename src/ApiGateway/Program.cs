@@ -2,6 +2,8 @@ using Microsoft.OpenApi.Models;
 using MassTransit;
 using ApiGateway.Messaging;
 using DotNetEnv;
+using SofkaFinance.Contracts.Accounts;
+using SofkaFinance.Contracts.Customers;
 
 Env.Load(".env");
 
@@ -29,12 +31,25 @@ builder.Services.AddMassTransit(bus =>
         cfg.UseTimeout(x => x.Timeout = TimeSpan.FromSeconds(30));
     });
 
-    // Registrar request clients para cada comando/query
-    bus.AddRequestClient<SofkaFinance.Contracts.Accounts.CreateAccountCommand>();
-    bus.AddRequestClient<SofkaFinance.Contracts.Accounts.GetAccountByIdQuery>();
-    bus.AddRequestClient<SofkaFinance.Contracts.Accounts.GetAllAccountsQuery>();
-    bus.AddRequestClient<SofkaFinance.Contracts.Accounts.GetAccountsByCustomerQuery>();
-    bus.AddRequestClient<SofkaFinance.Contracts.Accounts.CloseAccountCommand>();
+    // Registrar request accounts
+    bus.AddRequestClient<CreateAccountCommand>();
+    bus.AddRequestClient<GetAccountByIdQuery>();
+    bus.AddRequestClient<GetAllAccountsQuery>();
+    bus.AddRequestClient<GetAccountsByCustomerQuery>();
+    bus.AddRequestClient<CloseAccountCommand>();
+    bus.AddRequestClient<DepositCommand>();
+    bus.AddRequestClient<WithdrawCommand>();
+    bus.AddRequestClient<TransferCommand>();
+    bus.AddRequestClient<GetMovementsByAccountQuery>();
+    bus.AddRequestClient<GetMovementsReportQuery>();
+
+    // Customer request clients
+    bus.AddRequestClient<CreateCustomerCommand>();
+    bus.AddRequestClient<UpdateCustomerCommand>();
+    bus.AddRequestClient<DeleteCustomerCommand>();
+    bus.AddRequestClient<GetCustomerByIdQuery>();
+    bus.AddRequestClient<GetAllCustomersQuery>();
+    bus.AddRequestClient<LoginCommand>();
 });
 
 builder.Services.AddScoped<IMessagingClient, MassTransitMessagingClient>();

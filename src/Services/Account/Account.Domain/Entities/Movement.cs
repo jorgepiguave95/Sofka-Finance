@@ -7,26 +7,30 @@ public sealed class Movement
 {
     public Guid Id { get; private set; }
     public Guid AccountId { get; private set; }
-    public DateTime DateUtc { get; private set; }
     public MovementType Type { get; private set; }
     public decimal Value { get; private set; }
-    public decimal PostBalance { get; private set; }
+    public decimal AvailableBalance { get; private set; }
+    public bool Status { get; private set; }
+    public DateTime Date { get; private set; }
+    public string? Concept { get; private set; }
 
-    private Movement() { } // EF
+    private Movement() { }
 
-    private Movement(Guid accountId, DateTime dateUtc, MovementType type, decimal value, decimal postBalance)
+    private Movement(Guid accountId, DateTime dateUtc, MovementType type, decimal value, decimal availableBalance, string? concept)
     {
         if (value == 0)
             throw new DomainException("El monto del movimiento no puede ser cero.", ErrorCodes.MOVEMENT_VALUE_ZERO);
 
         Id = Guid.NewGuid();
         AccountId = accountId;
-        DateUtc = dateUtc;
+        Date = dateUtc;
         Type = type;
         Value = value;
-        PostBalance = postBalance;
+        AvailableBalance = availableBalance;
+        Status = true;
+        Concept = concept;
     }
 
-    public static Movement Create(Guid accountId, DateTime dateUtc, MovementType type, decimal value, decimal postBalance)
-        => new(accountId, dateUtc, type, value, postBalance);
+    public static Movement Create(Guid accountId, DateTime dateUtc, MovementType type, decimal value, decimal availableBalance, string? concept = null)
+        => new(accountId, dateUtc, type, value, availableBalance, concept);
 }

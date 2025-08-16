@@ -6,8 +6,10 @@ namespace Customers.Domain.Entities;
 public sealed class Client : Person
 {
     public Email Email { get; private set; } = default!;
-    public string PasswordHash { get; private set; } = default!;
+    public string Password { get; private set; } = default!;
     public bool IsActive { get; private set; }
+    public DateTime CreatedAt { get; private set; }
+    public DateTime UpdatedAt { get; private set; }
 
     private Client() { }
 
@@ -22,8 +24,10 @@ public sealed class Client : Person
         if (string.IsNullOrWhiteSpace(passwordHash))
             throw new DomainException("Se requiere contraseña.", ErrorCodes.CustomerPasswordRequired);
 
-        PasswordHash = passwordHash;
+        Password = passwordHash;
         IsActive = isActive;
+        CreatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
     }
 
     public static Client Create(string name, string gender, int age,
@@ -32,7 +36,10 @@ public sealed class Client : Person
         => new(Guid.NewGuid(), name, gender, age, identification, address, phone, email, passwordHash, true);
 
     public void ChangeEmail(Email newEmail)
-        => Email = newEmail ?? throw new DomainException("Se requiere correo electrónico.", ErrorCodes.CustomerEmailRequired);
+    {
+        Email = newEmail ?? throw new DomainException("Se requiere correo electrónico.", ErrorCodes.CustomerEmailRequired);
+        UpdatedAt = DateTime.UtcNow;
+    }
 
     public void ChangePassword(string newPasswordHash)
     {
@@ -40,9 +47,19 @@ public sealed class Client : Person
         if (string.IsNullOrWhiteSpace(newPasswordHash))
             throw new DomainException("Se requiere contraseña.", ErrorCodes.CustomerPasswordRequired);
 
-        PasswordHash = newPasswordHash;
+        Password = newPasswordHash;
+        UpdatedAt = DateTime.UtcNow;
     }
 
-    public void Activate() => IsActive = true;
-    public void Deactivate() => IsActive = false;
+    public void Activate()
+    {
+        IsActive = true;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Deactivate()
+    {
+        IsActive = false;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }

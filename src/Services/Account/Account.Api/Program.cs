@@ -1,41 +1,56 @@
+using Account;
+using MassTransit;
+using Account.Api.Messaging;
+using Account.Api.Controllers;
+using DotNetEnv;
+
+Env.Load(".env");
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+builder.Services.AddScoped<AccountsController>();
+builder.Services.AddScoped<MovementsController>();
+
+
+builder.Services.AddScoped<IMessagingClient, MassTransitMessagingClient>();
+
+// RabbitMQ config
+var rabbitHost = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "localhost";
+var rabbitUser = Environment.GetEnvironmentVariable("RABBITMQ_USER") ?? "guest";
+var rabbitPass = Environment.GetEnvironmentVariable("RABBITMQ_PASSWORD") ?? "guest";
+
+builder.Services.AddMassTransit(x =>
+{
+    // Solo registrar el consumer general
+    x.AddConsumer<GeneralConsumer>();
+
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host(rabbitHost, h =>
+        {
+            h.Username(rabbitUser);
+            h.Password(rabbitPass);
+        });
+
+        cfg.PrefetchCount = 32;
+
+        // Exchange base del dominio
+        const string exchange = "finance.accounts";
+
+        // Una sola cola que maneja todos los routing keys
+        cfg.ReceiveEndpoint("accounts.general", e =>
+        {
+            // Habilitar topology automática para Request-Response
+            e.ConfigureConsumeTopology = true;
+
+            // Configurar el consumer
+            e.ConfigureConsumer<GeneralConsumer>(context);
+        });
+    });
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
-
-app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

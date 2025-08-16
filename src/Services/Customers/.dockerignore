@@ -11,22 +11,64 @@
 *.tmp
 *.log
 .DS_Store
+README.md
+LICENSE
+*.md
 
 # .NET build artifacts
 **/bin/
 **/obj/
 **/out/
 **/TestResults/
+**/packages/
+**/publish/
 
 # Node artifacts
 node_modules/
+npm-debug.log*
 
 # Coverage and reports
 coverage/
 **/.nyc_output/
+**/*.coverage
+**/*.coveragexml
 
 # Environment and local config
 .env
+.env.local
+.env.production
 **/*.pubxml
 **/*.pubxml.user
 **/Properties/launchSettings.json
+**/appsettings.Development.json
+
+# Docker files
+**/Dockerfile*
+**/.dockerignore
+**/docker-compose*
+
+# Other microservices (ignore what Customers doesn't need)
+Services/Account/
+Services/ApiGateway/
+
+# Cache and temp
+**/.cache/
+**/temp/
+**/tmp/
+**/.temp/
+
+# Database files
+**/*.db
+**/*.sqlite
+**/*.mdf
+**/*.ldf
+
+# Logs
+**/logs/
+**/serilog-*.txt
+
+# Security files
+**/*.pfx
+**/*.p12
+**/*.key
+**/*.pem

@@ -15,7 +15,80 @@
 # .NET build artifacts
 **/bin/
 **/obj/
+**/out/# General
+.git
+.gitignore
+.gitattributes
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.swp
+*.tmp
+*.log
+.DS_Store
+README.md
+LICENSE
+*.md
+
+# .NET build artifacts
+**/bin/
+**/obj/
 **/out/
+**/TestResults/
+**/packages/
+**/publish/
+
+# Node artifacts
+node_modules/
+npm-debug.log*
+
+# Coverage and reports
+coverage/
+**/.nyc_output/
+**/*.coverage
+**/*.coveragexml
+
+# Environment and local config
+.env
+.env.local
+.env.production
+**/*.pubxml
+**/*.pubxml.user
+**/Properties/launchSettings.json
+**/appsettings.Development.json
+
+# Docker files
+**/Dockerfile*
+**/.dockerignore
+**/docker-compose*
+
+# Services that Gateway doesn't need for build
+Services/Account/
+Services/Customers/
+
+# Cache and temp
+**/.cache/
+**/temp/
+**/tmp/
+**/.temp/
+
+# Database files
+**/*.db
+**/*.sqlite
+**/*.mdf
+**/*.ldf
+
+# Logs
+**/logs/
+**/serilog-*.txt
+
+# Security files
+**/*.pfx
+**/*.p12
+**/*.key
+**/*.pem
 **/TestResults/
 
 # Node artifacts
@@ -30,3 +103,11 @@ coverage/
 **/*.pubxml
 **/*.pubxml.user
 **/Properties/launchSettings.json
+
+# Service folders
+Services/Account/
+Services/Customers/
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/

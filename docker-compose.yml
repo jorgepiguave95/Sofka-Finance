@@ -6,69 +6,13 @@ networks:
   database:
     driver: bridge
 
+volumes:
+  sqlserver-data:
+  rabbitmq-data:
+
 services:
-  rabbitmq:
-    image: rabbitmq:3-management
-    environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks: [backend]
-
-  customers.api:
-    build:
-      context: ./src/Services/Customers
-      dockerfile: Dockerfile
-    environment:
-      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
-      RabbitMQ__Host: rabbitmq
-      RabbitMQ__User: ${RABBITMQ_USER}
-      RabbitMQ__Password: ${RABBITMQ_PASS}
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    networks: [backend]
-
-  accounts.api:
-    build:
-      context: ./src/Services/Account
-      dockerfile: Dockerfile
-    environment:
-      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
-      RabbitMQ__Host: rabbitmq
-      RabbitMQ__User: ${RABBITMQ_USER}
-      RabbitMQ__Password: ${RABBITMQ_PASS}
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    networks: [backend]
-
-  gateway:
-    build:
-      context: ./src/ApiGateway
-      dockerfile: Dockerfile
-    ports:
-      - "${GATEWAY_PORT}:8080"
-    environment:
-      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
-      RabbitMQ__Host: rabbitmq
-      RabbitMQ__User: ${RABBITMQ_USER}
-      RabbitMQ__Password: ${RABBITMQ_PASS}
-    depends_on:
-      customers.api:
-        condition: service_started
-      accounts.api:
-        condition: service_started
-      rabbitmq:
-        condition: service_healthy
-    networks: [backend]
-
   sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest # Licencia permitida en desarrollo
+    image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: sqlserver
     ports:
       - "${MSSQL_PORT}:1433"
@@ -80,5 +24,81 @@ services:
     restart: always
     networks: [database]
 
-volumes:
-  sqlserver-data:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+      RABBITMQ_DEFAULT_VHOST: "/"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+    networks: [backend]
+
+  customers:
+    build:
+      context: ./src
+      dockerfile: Services/Customers/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_NAME: ${DATABASE_NAME_CONSUMER}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${MSSQL_SA_PASSWORD}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      sqlserver:
+        condition: service_started
+    networks: [backend]
+
+  accounts:
+    build:
+      context: ./src
+      dockerfile: Services/Account/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_NAME: ${DATABASE_NAME_ACCOUNT}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${MSSQL_SA_PASSWORD}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      sqlserver:
+        condition: service_started
+    networks: [backend]
+
+  gateway:
+    build:
+      context: ./src
+      dockerfile: ApiGateway/Dockerfile
+    ports:
+      - "${GATEWAY_PORT}:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    depends_on:
+      customers:
+        condition: service_started
+      accounts:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    networks: [backend]

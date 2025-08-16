@@ -1,33 +1,45 @@
 ﻿using System.Text.RegularExpressions;
 using Customers.Domain.Errors;
 
-namespace Customers.Domain.ValueObjects
+namespace Customers.Domain.ValueObjects;
+
+public record PhoneNumber
 {
-    public class PhoneNumber
+    private static readonly Regex PhoneRegex = new(
+        @"^[0-9]+$",
+        RegexOptions.Compiled);
+
+    private const int MinDigits = 5;
+    private const int MaxDigits = 10;
+
+    public string Value { get; }
+
+    public PhoneNumber(string value)
     {
-        public string Value { get; }
+        value = value?.Trim() ?? string.Empty;
 
-        private static readonly Regex PhoneRegex = new(@"^\+?[0-9]{7,15}$", RegexOptions.Compiled);
+        if (string.IsNullOrWhiteSpace(value))
+            throw new DomainException("El número de teléfono es requerido.", ErrorCodes.CustomerPhoneRequired);
 
-        public PhoneNumber(string value)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-                throw new DomainException("Se requiere el número de teléfono.", ErrorCodes.CustomerPhoneRequired);
+        if (!PhoneRegex.IsMatch(value))
+            throw new DomainException(
+                $"El número de teléfono solo debe contener dígitos (0-9). Valor recibido: '{value}'",
+                ErrorCodes.CustomerPhoneInvalid);
 
-            if (!PhoneRegex.IsMatch(value))
-                throw new DomainException("Formato de número de teléfono inválido.", ErrorCodes.CustomerPhoneInvalid);
+        if (value.Length < MinDigits)
+            throw new DomainException(
+                $"El número de teléfono debe tener al menos {MinDigits} dígitos. Dígitos actuales: {value.Length}",
+                ErrorCodes.CustomerPhoneTooShort);
 
-            Value = value;
-        }
+        if (value.Length > MaxDigits)
+            throw new DomainException(
+                $"El número de teléfono no puede exceder {MaxDigits} dígitos. Dígitos actuales: {value.Length}",
+                ErrorCodes.CustomerPhoneTooLong);
 
-        public override bool Equals(object? obj)
-        {
-            if (obj is not PhoneNumber other) return false;
-            return Value.Equals(other.Value);
-        }
-
-        public override int GetHashCode() => Value.GetHashCode();
-
-        public override string ToString() => Value;
+        Value = value;
     }
+
+    public static implicit operator string(PhoneNumber phone) => phone.Value;
+
+    public override string ToString() => Value;
 }

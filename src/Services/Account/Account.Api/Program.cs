@@ -57,11 +57,4 @@ builder.Services.AddScoped<IMovementRepository, MovementRepository>();
 
 var app = builder.Build();
 
-// Aplica migraciones automáticamente
-// using (var scope = app.Services.CreateScope())
-// {
-//     var dbContext = scope.ServiceProvider.GetRequiredService<AccountDbContext>();
-//     dbContext.Database.Migrate();
-// }
-
 app.Run();

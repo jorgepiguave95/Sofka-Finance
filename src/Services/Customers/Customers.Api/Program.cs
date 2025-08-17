@@ -2,6 +2,10 @@ using Customers;
 using MassTransit;
 using Customers.Api.Messaging;
 using DotNetEnv;
+using Microsoft.EntityFrameworkCore;
+using Customers.Infrastructure.Persistence;
+using Customers.Infrastructure.Repositories;
+using Customers.Application.Repositories;
 
 Env.Load(".env");
 
@@ -34,6 +38,24 @@ builder.Services.AddMassTransit(x =>
         cfg.ConfigureEndpoints(context);
     });
 });
+
+// SQL Server Config
+var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
+var dbPort = Environment.GetEnvironmentVariable("DB_PORT") ?? "1433";
+var dbName = Environment.GetEnvironmentVariable("DB_NAME_CUSTOMERS") ?? "SofkaCustomers";
+var dbUser = Environment.GetEnvironmentVariable("DB_USER") ?? "sa";
+var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD")
+    ?? throw new InvalidOperationException("DB_PASSWORD is required");
+
+var connectionString = $"Server={dbHost},{dbPort};Database={dbName};User Id={dbUser};Password={dbPassword};TrustServerCertificate=true;";
+
+builder.Services.AddDbContext<CustomersDbContext>(options =>
+    options.UseSqlServer(
+        connectionString,
+        b => b.MigrationsAssembly("Customers.Infrastructure")
+    ));
+
+builder.Services.AddScoped<IClientRepository, ClientRepository>();
 
 var app = builder.Build();
 

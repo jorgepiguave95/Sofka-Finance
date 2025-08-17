@@ -27,14 +27,14 @@ public sealed class Client : Person
 
     public static Client Create(string name, string gender, int age,
                                 string identification, string address, string phone,
-                                string email, string passwordHash)
+                                string email, string password)
     {
         var genderVO = new Gender(gender);
         var ageVO = new Age(age);
         var addressVO = new Address(address);
         var phoneVO = new PhoneNumber(phone);
         var emailVO = new Email(email);
-        var passwordVO = new Password(passwordHash);
+        var passwordVO = new Password(password);
 
         return new Client(
             Guid.NewGuid(),

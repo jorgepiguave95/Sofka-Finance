@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using ApiGateway.Messaging;
 using SofkaFinance.Contracts.Customers;
 using ApiGateway.Dtos;
+using System.Text.Json;
 
 namespace ApiGateway.Controllers;
 
@@ -32,7 +33,7 @@ public class CustomersController : ControllerBase
 
             var contractResponse = await _client.RequestAsync<CreateCustomerCommand, CreateCustomerResponse>(cmd);
 
-            if (contractResponse.Success && contractResponse.CustomerId.HasValue)
+            if (contractResponse.CustomerId.HasValue)
             {
                 var gatewayResponse = new Customer(
                     Message: "Cliente creado exitosamente",
@@ -69,24 +70,20 @@ public class CustomersController : ControllerBase
 
             var contractResponse = await _client.RequestAsync<GetCustomerByIdQuery, GetCustomerResponse>(query);
 
-            if (contractResponse.Success)
+            if (contractResponse.Customer != null)
             {
-                var gatewayResponse = new Customer(
-                    Message: "Cliente obtenido exitosamente",
-                    Cliente: new CustomerEntity(
-                        Id: id,
-                        Nombre: "Nombre de prueba",
-                        Correo: "correo@prueba.com",
-                        Telefono: "123456789",
-                        Direccion: "Dirección de prueba",
-                        Identificacion: "12345678",
-                        Genero: "Masculino",
-                        Edad: 30,
-                        FechaCreacion: DateTime.UtcNow
-                    )
-                );
+                var json = JsonSerializer.Serialize(contractResponse.Customer);
+                var customerData = JsonSerializer.Deserialize<CustomerEntity>(json);
 
-                return Ok(gatewayResponse);
+                if (customerData != null)
+                {
+                    var gatewayResponse = new Customer(
+                        Message: "Cliente obtenido exitosamente",
+                        Cliente: customerData
+                    );
+
+                    return Ok(gatewayResponse);
+                }
             }
 
             return BadRequest(new Response(contractResponse.Message));
@@ -107,11 +104,21 @@ public class CustomersController : ControllerBase
 
             var contractResponse = await _client.RequestAsync<GetAllCustomersQuery, GetAllCustomersResponse>(query);
 
-            if (contractResponse.Success)
+            if (contractResponse.Customers != null)
             {
+                var customerEntities = contractResponse.Customers.Select(customer =>
+                {
+                    var json = JsonSerializer.Serialize(customer);
+                    var customerData = JsonSerializer.Deserialize<CustomerEntity>(json);
+
+                    if (customerData == null) return null;
+
+                    return customerData;
+                }).Where(x => x != null).Cast<CustomerEntity>().ToArray();
+
                 var gatewayResponse = new CustomersList(
                     Message: "Clientes obtenidos exitosamente",
-                    Clientes: Array.Empty<CustomerEntity>()
+                    Clientes: customerEntities
                 );
 
                 return Ok(gatewayResponse);
@@ -135,7 +142,7 @@ public class CustomersController : ControllerBase
 
             var contractResponse = await _client.RequestAsync<UpdateCustomerCommand, UpdateCustomerResponse>(cmd);
 
-            if (contractResponse.Success)
+            if (contractResponse.CustomerId.HasValue)
             {
                 var gatewayResponse = new Customer(
                     Message: "Cliente actualizado exitosamente",
@@ -173,7 +180,7 @@ public class CustomersController : ControllerBase
 
             var contractResponse = await _client.RequestAsync<DeleteCustomerCommand, DeleteCustomerResponse>(cmd);
 
-            if (contractResponse.Success)
+            if (contractResponse.CustomerId.HasValue)
             {
                 return Ok(new Response("Cliente eliminado exitosamente"));
             }

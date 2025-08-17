@@ -8,8 +8,3 @@ public record GetCustomerByIdQuery(
 public record GetAllCustomersQuery(
     Guid OperationId
 );
-
-public record SearchCustomersQuery(
-    Guid OperationId,
-    string SearchTerm
-);

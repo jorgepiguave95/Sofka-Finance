@@ -26,14 +26,3 @@ public record DeleteCustomerCommand(
     Guid CustomerId
 );
 
-public record ActivateCustomerCommand(
-    Guid OperationId,
-    Guid CustomerId
-);
-
-public record DeactivateCustomerCommand(
-    Guid OperationId,
-    Guid CustomerId
-);
-
-

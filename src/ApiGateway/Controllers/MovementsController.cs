@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using ApiGateway.Messaging;
 using ApiGateway.Dtos;
 using SofkaFinance.Contracts.Accounts;
+using System.Text.Json;
 
 namespace ApiGateway.Controllers;
 
@@ -22,7 +23,7 @@ public class MovementsController : ControllerBase
 
             var contractResponse = await _client.RequestAsync<DepositCommand, DepositResponse>(cmd);
 
-            if (contractResponse.Success)
+            if (contractResponse.MovementId.HasValue)
             {
                 return Ok(new Response("Deposito realizado exitosamente"));
             }
@@ -45,7 +46,7 @@ public class MovementsController : ControllerBase
 
             var contractResponse = await _client.RequestAsync<WithdrawCommand, WithdrawResponse>(cmd);
 
-            if (contractResponse.Success)
+            if (contractResponse.MovementId.HasValue)
             {
                 return Ok(new Response("Retiro realizado exitosamente"));
             }
@@ -68,7 +69,7 @@ public class MovementsController : ControllerBase
 
             var contractResponse = await _client.RequestAsync<TransferCommand, TransferResponse>(cmd);
 
-            if (contractResponse.Success)
+            if (contractResponse.MovementId.HasValue)
             {
                 return Ok(new Response("Transferencia realizada exitosamente"));
             }
@@ -92,11 +93,21 @@ public class MovementsController : ControllerBase
 
             var contractResponse = await _client.RequestAsync<GetMovementsByAccountQuery, GetMovementsByAccountResponse>(query);
 
-            if (contractResponse?.Success == true)
+            if (contractResponse?.Movements != null)
             {
+                var movementEntities = contractResponse.Movements.Select(movement =>
+                {
+                    var json = JsonSerializer.Serialize(movement);
+                    var movementData = JsonSerializer.Deserialize<MovementEntity>(json);
+
+                    if (movementData == null) return null;
+
+                    return movementData;
+                }).Where(x => x != null).Cast<MovementEntity>().ToArray();
+
                 var gatewayResponse = new MovementsList(
                     Message: "Movimientos obtenidos exitosamente",
-                    Movimientos: Array.Empty<MovementEntity>()
+                    Movimientos: movementEntities
                 );
 
                 return Ok(gatewayResponse);
@@ -111,37 +122,33 @@ public class MovementsController : ControllerBase
     }
 
     [HttpGet("reportes")]
-    public async Task<ActionResult<MovementReport>> Report(
+    public async Task<ActionResult<MovementsList>> Report(
         [FromQuery] DateTime fechaInicio,
         [FromQuery] DateTime fechaFin,
-        [FromBody] GetMovementReportDto body)
+        [FromQuery] Guid idCliente)
     {
         try
         {
             var operationId = Guid.NewGuid();
-            var query = new GetMovementsReportQuery(operationId, body.IdCliente, fechaInicio, fechaFin);
+            var query = new GetMovementsReportQuery(operationId, idCliente, fechaInicio, fechaFin);
 
             var contractResponse = await _client.RequestAsync<GetMovementsReportQuery, GetMovementsReportResponse>(query);
 
-            if (contractResponse.Success)
+            if (contractResponse.Movements != null)
             {
-                var gatewayResponse = new MovementReport(
-                    Message: "Reporte de movimientos generado exitosamente",
-                    Cliente: new CustomerEntity(
-                        Id: body.IdCliente,
-                        Nombre: "Cliente de prueba",
-                        Correo: "cliente@prueba.com",
-                        Telefono: "123456789",
-                        Direccion: "Dirección de prueba",
-                        Identificacion: "12345678",
-                        Genero: "No especificado",
-                        Edad: 0,
-                        FechaCreacion: DateTime.UtcNow
-                    ),
-                    Movimientos: Array.Empty<MovementEntity>(),
-                    TotalDepositos: 0.00m,
-                    TotalRetiros: 0.00m,
-                    MontoNeto: 0.00m
+                var movementEntities = contractResponse.Movements.Select(movement =>
+                {
+                    var json = JsonSerializer.Serialize(movement);
+                    var movementData = JsonSerializer.Deserialize<MovementEntity>(json);
+
+                    if (movementData == null) return null;
+
+                    return movementData;
+                }).Where(x => x != null).Cast<MovementEntity>().ToArray();
+
+                var gatewayResponse = new MovementsList(
+                    Message: "Movimientos obtenidos exitosamente",
+                    Movimientos: movementEntities
                 );
 
                 return Ok(gatewayResponse);
@@ -151,7 +158,7 @@ public class MovementsController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new Response($"Error procesando reporte de movimientos: {ex.Message}"));
+            return StatusCode(500, new Response($"Error procesando consulta de movimientos: {ex.Message}"));
         }
     }
 }

@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Account.Domain\Account.Domain.csproj" />
+    <ProjectReference Include="..\..\..\Shared\SofkaFinance.Contracts\SofkaFinance.Contracts.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

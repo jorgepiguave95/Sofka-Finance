@@ -22,14 +22,14 @@ public class AuthController : ControllerBase
 
             var contractResponse = await _client.RequestAsync<LoginCommand, LoginResponse>(cmd);
 
-            if (contractResponse.Success)
+            if (!string.IsNullOrEmpty(contractResponse.Token))
             {
                 var gatewayResponse = new Login(
                     Message: "Inicio de sesion exitoso",
                     Auth: new AuthEntity(
                         Correo: contractResponse.CustomerEmail ?? "",
                         Token: contractResponse.Token ?? "",
-                        FechaExpiracion: contractResponse.ExpiresAt ?? DateTime.UtcNow.AddHours(24),
+                        FechaExpiracion: DateTime.UtcNow.AddHours(24),
                         IdCliente: contractResponse.CustomerId ?? Guid.Empty
                     )
                 );

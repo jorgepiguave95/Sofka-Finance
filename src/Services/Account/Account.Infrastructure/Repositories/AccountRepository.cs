@@ -33,6 +33,13 @@ public class AccountRepository : IAccountRepository
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<AccountEntity>> GetAllAsync()
+    {
+        return await _context.Accounts
+            .OrderByDescending(a => a.CreatedAt)
+            .ToListAsync();
+    }
+
     public async Task<AccountEntity> CreateAsync(AccountEntity account)
     {
         _context.Accounts.Add(account);

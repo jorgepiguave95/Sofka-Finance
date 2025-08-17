@@ -39,7 +39,7 @@ public class GeneralConsumer :
 
             var result = await _accountsController.Create(context.Message);
 
-            Console.WriteLine($"*** SENDING CreateAccount Response: {result.Success} ***");
+            Console.WriteLine($"*** SENDING CreateAccount Response: {result.OperationId} ***");
             await context.RespondAsync(result);
             Console.WriteLine($"*** RESPONSE SENT ***");
         }
@@ -48,7 +48,6 @@ public class GeneralConsumer :
             Console.WriteLine($"*** ERROR in CreateAccount: {ex.Message} ***");
             await context.RespondAsync(new CreateAccountResponse(
                 OperationId: context.Message.OperationId,
-                Success: false,
                 Message: ex.Message,
                 AccountId: null
             ));
@@ -67,7 +66,6 @@ public class GeneralConsumer :
         {
             await context.RespondAsync(new CloseAccountResponse(
                 OperationId: context.Message.OperationId,
-                Success: false,
                 Message: ex.Message,
                 AccountId: context.Message.AccountId
             ));
@@ -87,7 +85,6 @@ public class GeneralConsumer :
         {
             await context.RespondAsync(new DepositResponse(
                 OperationId: context.Message.OperationId,
-                Success: false,
                 Message: ex.Message,
                 MovementId: null
             ));
@@ -106,7 +103,6 @@ public class GeneralConsumer :
         {
             await context.RespondAsync(new WithdrawResponse(
                 OperationId: context.Message.OperationId,
-                Success: false,
                 Message: ex.Message,
                 MovementId: null
             ));
@@ -125,7 +121,6 @@ public class GeneralConsumer :
         {
             await context.RespondAsync(new TransferResponse(
                 OperationId: context.Message.OperationId,
-                Success: false,
                 Message: ex.Message,
                 MovementId: null
             ));
@@ -145,7 +140,6 @@ public class GeneralConsumer :
         {
             await context.RespondAsync(new GetAccountResponse(
                 OperationId: context.Message.OperationId,
-                Success: false,
                 Message: ex.Message,
                 Account: null
             ));
@@ -164,7 +158,6 @@ public class GeneralConsumer :
         {
             await context.RespondAsync(new GetAccountsByCustomerResponse(
                 OperationId: context.Message.OperationId,
-                Success: false,
                 Message: ex.Message,
                 Accounts: null
             ));
@@ -183,7 +176,6 @@ public class GeneralConsumer :
         {
             await context.RespondAsync(new GetAllAccountsResponse(
                 OperationId: context.Message.OperationId,
-                Success: false,
                 Message: ex.Message,
                 Accounts: null
             ));
@@ -203,7 +195,6 @@ public class GeneralConsumer :
         {
             await context.RespondAsync(new GetMovementsByAccountResponse(
                 OperationId: context.Message.OperationId,
-                Success: false,
                 Message: ex.Message,
                 Movements: null
             ));
@@ -222,7 +213,6 @@ public class GeneralConsumer :
         {
             await context.RespondAsync(new GetMovementsReportResponse(
                 OperationId: context.Message.OperationId,
-                Success: false,
                 Message: ex.Message,
                 Report: null
             ));

@@ -2,6 +2,7 @@ using ApiGateway.Dtos;
 using ApiGateway.Messaging;
 using Microsoft.AspNetCore.Mvc;
 using SofkaFinance.Contracts.Accounts;
+using System.Text.Json;
 
 namespace ApiGateway.Controllers;
 
@@ -26,11 +27,21 @@ public class AccountsController : ControllerBase
 
             var contractResponse = await _client.RequestAsync<GetAllAccountsQuery, GetAllAccountsResponse>(query);
 
-            if (contractResponse.Success)
+            if (contractResponse.Accounts != null)
             {
+                var accountEntities = contractResponse.Accounts.Select(account =>
+                {
+                    var json = JsonSerializer.Serialize(account);
+                    var accountData = JsonSerializer.Deserialize<AccountEntity>(json);
+
+                    if (accountData == null) return null;
+
+                    return accountData;
+                }).Where(x => x != null).Cast<AccountEntity>().ToArray();
+
                 var gatewayResponse = new AccountsList(
                     Message: "Cuentas obtenidas exitosamente",
-                    Cuentas: Array.Empty<AccountEntity>()
+                    Cuentas: accountEntities
                 );
 
                 return Ok(gatewayResponse);
@@ -54,22 +65,20 @@ public class AccountsController : ControllerBase
 
             var contractResponse = await _client.RequestAsync<GetAccountByIdQuery, GetAccountResponse>(query);
 
-            if (contractResponse.Success)
+            if (contractResponse.Account != null)
             {
-                var gatewayResponse = new Account(
-                    Message: "Cuenta obtenida exitosamente",
-                    Cuenta: new AccountEntity(
-                        Id: accountId,
-                        IdCliente: Guid.NewGuid(),
-                        NumeroCuenta: "ACC-20250815-AAAAAAAA",
-                        TipoCuenta: "Ahorros",
-                        Saldo: 1000.00m,
-                        EstaActiva: true,
-                        FechaCreacion: DateTime.UtcNow
-                    )
-                );
+                var json = JsonSerializer.Serialize(contractResponse.Account);
+                var accountData = JsonSerializer.Deserialize<AccountEntity>(json);
 
-                return Ok(gatewayResponse);
+                if (accountData != null)
+                {
+                    var gatewayResponse = new Account(
+                        Message: "Cuenta obtenida exitosamente",
+                        Cuenta: accountData
+                    );
+
+                    return Ok(gatewayResponse);
+                }
             }
 
             return BadRequest(new Response(contractResponse.Message));
@@ -90,7 +99,7 @@ public class AccountsController : ControllerBase
 
             var contractResponse = await _client.RequestAsync<CreateAccountCommand, CreateAccountResponse>(command);
 
-            if (contractResponse.Success && contractResponse.AccountId.HasValue)
+            if (contractResponse.AccountId.HasValue)
             {
                 var gatewayResponse = new Account(
                     Message: "Cuenta creada exitosamente",
@@ -126,7 +135,7 @@ public class AccountsController : ControllerBase
 
             var contractResponse = await _client.RequestAsync<CloseAccountCommand, CloseAccountResponse>(command);
 
-            if (contractResponse.Success)
+            if (contractResponse.AccountId.HasValue)
             {
                 return Ok(new Response("Cuenta cerrada exitosamente"));
             }

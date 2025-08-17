@@ -1,6 +1,7 @@
-using Customers;
 using MassTransit;
 using Customers.Api.Messaging;
+using Customers.Application.Interfaces;
+using Customers.Application.Services;
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 using Customers.Infrastructure.Persistence;
@@ -56,6 +57,8 @@ builder.Services.AddDbContext<CustomersDbContext>(options =>
     ));
 
 builder.Services.AddScoped<IClientRepository, ClientRepository>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 

@@ -1,5 +1,7 @@
 using MassTransit;
 using Account.Api.Messaging;
+using Account.Application.Interfaces;
+using Account.Application.Services;
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 using Account.Infrastructure.Persistence;
@@ -54,6 +56,8 @@ builder.Services.AddDbContext<AccountDbContext>(options =>
 
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IMovementRepository, MovementRepository>();
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IMovementService, MovementService>();
 
 var app = builder.Build();
 

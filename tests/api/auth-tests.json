@@ -1,36 +1,61 @@
 {
   "info": {
-    "title": "SofkaFinance Auth API Tests",
-    "description": "Pruebas para los endpoints de autenticación del API Gateway",
-    "baseUrl": "http://localhost:3000",
-    "swaggerUrl": "http://localhost:3000/swagger"
+    "_postman_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    "name": "SofkaFinance - Auth",
+    "description": "Colección para autenticación",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
-  "authTests": {
-    "login": {
-      "method": "POST",
-      "endpoint": "/api/auth/login",
-      "description": "Prueba de inicio de sesión",
-      "headers": {
-        "Content-Type": "application/json"
-      },
-      "body": {
-        "email": "test@test.com",
-        "password": "123456"
-      },
-      "expectedStatus": 200,
-      "expectedResponse": {
-        "message": "Inicio de sesion exitoso",
-        "auth": {
-          "correo": "test@test.com",
-          "token": "string",
-          "fechaExpiracion": "2025-08-17T00:00:00Z",
-          "idCliente": "guid"
+  "item": [
+    {
+      "name": "AUTH - Login",
+      "item": [
+        {
+          "name": "Login Exitoso - Ejemplo 1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"carlos.ruiz@email.com\",\n  \"password\": \"Carlos$2025!\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/clientes/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "clientes", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login Exitoso - Ejemplo 2",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"laura.gomez@email.com\",\n  \"password\": \"LauraG@2025\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/clientes/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "clientes", "login"]
+            }
+          }
         }
-      }
+      ]
     }
-  },
-  "samples": {
-    "curlCommand": "curl -X POST \"http://localhost:3000/api/auth/login\" -H \"Content-Type: application/json\" -d '{\"email\":\"test@test.com\",\"password\":\"123456\"}'",
-    "powershellCommand": "Invoke-RestMethod -Uri 'http://localhost:3000/api/auth/login' -Method POST -ContentType 'application/json' -Body '{\"email\":\"test@test.com\",\"password\":\"123456\"}'"
-  }
+  ]
 }

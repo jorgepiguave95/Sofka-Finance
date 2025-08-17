@@ -1,97 +1,258 @@
 {
-  "baseUrl": "http://localhost:3000",
-  "swaggerUrl": "http://localhost:3000/swagger",
-  "customerTests": {
-    "createCustomer": {
-      "method": "POST",
-      "endpoint": "/api/clientes",
-      "description": "Crear un nuevo cliente",
-      "url": "http://localhost:3000/api/clientes",
-      "body": {
-        "name": "Juan Perez",
-        "email": "juan.perez@test.com",
-        "phone": "123456789",
-        "address": "Calle 123",
-        "identification": "12345678",
-        "gender": "Masculino",
-        "age": 30,
-        "password": "password123"
-      },
-      "expectedStatus": 200,
-      "expectedResponse": {
-        "message": "Cliente creado exitosamente",
-        "cliente": {
-          "id": "guid",
-          "nombre": "Juan Perez",
-          "correo": "juan.perez@test.com",
-          "telefono": "123456789"
-        }
-      }
-    },
-    "getCustomers": {
-      "method": "GET",
-      "endpoint": "/api/clientes",
-      "description": "Obtener todos los clientes",
-      "url": "http://localhost:3000/api/clientes",
-      "expectedStatus": 200,
-      "expectedResponse": {
-        "message": "Clientes obtenidos exitosamente",
-        "clientes": []
-      }
-    },
-    "getCustomerById": {
-      "method": "GET",
-      "endpoint": "/api/clientes/{id}",
-      "description": "Obtener cliente por ID",
-      "url": "http://localhost:3000/api/clientes/550e8400-e29b-41d4-a716-446655440000",
-      "pathParams": {
-        "id": "550e8400-e29b-41d4-a716-446655440000"
-      },
-      "expectedStatus": 200,
-      "expectedResponse": {
-        "message": "Cliente obtenido exitosamente",
-        "cliente": {}
-      }
-    },
-    "updateCustomer": {
-      "method": "PUT",
-      "endpoint": "/api/clientes/{id}",
-      "description": "Actualizar cliente",
-      "url": "http://localhost:3000/api/clientes/550e8400-e29b-41d4-a716-446655440000",
-      "pathParams": {
-        "id": "550e8400-e29b-41d4-a716-446655440000"
-      },
-      "body": {
-        "name": "Juan Perez Actualizado",
-        "email": "juan.updated@test.com",
-        "phone": "987654321",
-        "address": "Nueva Direccion 456"
-      },
-      "expectedStatus": 200,
-      "expectedResponse": {
-        "message": "Cliente actualizado exitosamente",
-        "cliente": {}
-      }
-    },
-    "deleteCustomer": {
-      "method": "DELETE",
-      "endpoint": "/api/clientes/{id}",
-      "description": "Eliminar cliente",
-      "url": "http://localhost:3000/api/clientes/550e8400-e29b-41d4-a716-446655440000",
-      "pathParams": {
-        "id": "550e8400-e29b-41d4-a716-446655440000"
-      },
-      "expectedStatus": 200,
-      "expectedResponse": {
-        "message": "Cliente eliminado exitosamente"
-      }
-    }
+  "info": {
+    "_postman_id": "12345678-1234-1234-1234-123456789012",
+    "name": "SofkaFinance - Customers",
+    "description": "Colección para clientes",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
-  "samples": {
-    "createCustomerCommand": "curl -X POST \"http://localhost:3000/api/clientes\" -H \"Content-Type: application/json\" -d '{\"name\":\"Juan Perez\",\"email\":\"juan.perez@test.com\",\"phone\":\"123456789\",\"address\":\"Calle 123\",\"identification\":\"12345678\",\"gender\":\"Masculino\",\"age\":30,\"password\":\"password123\"}'",
-    "getCustomersCommand": "curl -X GET \"http://localhost:3000/api/clientes\"",
-    "getCustomerByIdCommand": "curl -X GET \"http://localhost:3000/api/clientes/550e8400-e29b-41d4-a716-446655440000\"",
-    "updateCustomerCommand": "curl -X PUT \"http://localhost:3000/api/clientes/550e8400-e29b-41d4-a716-446655440000\" -H \"Content-Type: application/json\" -d '{\"name\":\"Juan Perez Actualizado\",\"email\":\"juan.updated@test.com\",\"phone\":\"987654321\",\"address\":\"Nueva Direccion 456\"}'",
-    "deleteCustomerCommand": "curl -X DELETE \"http://localhost:3000/api/clientes/550e8400-e29b-41d4-a716-446655440000\""
-  }
+  "item": [
+    {
+      "name": "CREATE - Crear Clientes",
+      "item": [
+        {
+          "name": "Crear Cliente - Ejemplo 1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Carlos Ruiz\",\n  \"gender\": \"Male\",\n  \"age\": 29,\n  \"identification\": \"123456789\",\n  \"address\": \"Calle 45 #12-34, Bogotá\",\n  \"phone\": \"+57 3001234567\",\n  \"email\": \"carlos.ruiz@email.com\",\n  \"password\": \"Carlos$2025!\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/clientes",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "clientes"]
+            }
+          }
+        },
+        {
+          "name": "Crear Cliente - Ejemplo 2",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Laura Gómez\",\n  \"gender\": \"Female\",\n  \"age\": 18,\n  \"identification\": \"987654321\",\n  \"address\": \"Carrera 7 #89-10, Medellín\",\n  \"phone\": \"+57 3109876543\",\n  \"email\": \"laura.gomez@email.com\",\n  \"password\": \"LauraG@2025\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/clientes",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "clientes"]
+            }
+          }
+        },
+        {
+          "name": "Crear Cliente - Ejemplo 3",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Andrés Torres\",\n  \"gender\": \"Male\",\n  \"age\": 45,\n  \"identification\": \"1122334455\",\n  \"address\": \"Avenida 19 #120-30, Cali\",\n  \"phone\": \"+57 3157891234\",\n  \"email\": \"andres.torres@email.com\",\n  \"password\": \"Andres!2025\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/clientes",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "clientes"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET ALL - Obtener Todos",
+      "item": [
+        {
+          "name": "Obtener Todos los Clientes - Ejemplo 1",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/clientes",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "clientes"]
+            }
+          }
+        },
+        {
+          "name": "Obtener Todos los Clientes - Ejemplo 2",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/clientes",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "clientes"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET BY ID - Obtener por ID",
+      "item": [
+        {
+          "name": "Obtener Cliente ID - Ejemplo 1",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/clientes/11111111-1111-1111-1111-111111111111",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": [
+                "api",
+                "clientes",
+                "11111111-1111-1111-1111-111111111111"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Obtener Cliente ID - Ejemplo 2",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/clientes/22222222-2222-2222-2222-222222222222",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": [
+                "api",
+                "clientes",
+                "22222222-2222-2222-2222-222222222222"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "UPDATE - Actualizar Cliente",
+      "item": [
+        {
+          "name": "Actualizar Cliente - Ejemplo 1",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Carlos Ruiz Actualizado\",\n  \"email\": \"carlos.ruiz.nuevo@email.com\",\n  \"phone\": \"+57 3005555555\",\n  \"address\": \"Calle 100 #25-40, Bogotá Norte\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/clientes/11111111-1111-1111-1111-111111111111",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": [
+                "api",
+                "clientes",
+                "11111111-1111-1111-1111-111111111111"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Actualizar Cliente - Ejemplo 2",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Laura Gómez Actualizada\",\n  \"email\": \"laura.gomez.nueva@email.com\",\n  \"phone\": \"+57 3107777777\",\n  \"address\": \"Carrera 50 #100-80, Medellín Centro\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/clientes/22222222-2222-2222-2222-222222222222",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": [
+                "api",
+                "clientes",
+                "22222222-2222-2222-2222-222222222222"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "DELETE - Eliminar Cliente",
+      "item": [
+        {
+          "name": "Eliminar Cliente - Ejemplo 1",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/clientes/11111111-1111-1111-1111-111111111111",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": [
+                "api",
+                "clientes",
+                "11111111-1111-1111-1111-111111111111"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Eliminar Cliente - Ejemplo 2",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/clientes/22222222-2222-2222-2222-222222222222",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": [
+                "api",
+                "clientes",
+                "22222222-2222-2222-2222-222222222222"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
 }

@@ -1,6 +1,6 @@
 using Account;
 using MassTransit;
-using Account.Api.Controllers;
+using Account.Application.Interfaces;
 using SofkaFinance.Contracts.Accounts;
 
 namespace Account.Api.Messaging;
@@ -17,16 +17,15 @@ public class GeneralConsumer :
     IConsumer<GetMovementsByAccountQuery>,
     IConsumer<GetMovementsReportQuery>
 {
-    private readonly AccountsController _accountsController;
-    private readonly MovementsController _movementsController;
+    private readonly IAccountService _accountService;
+    private readonly IMovementService _movementService;
 
     public GeneralConsumer(
-        AccountsController accountsController,
-        MovementsController movementsController)
+        IAccountService accountService,
+        IMovementService movementService)
     {
-        _accountsController = accountsController;
-        _movementsController = movementsController;
-
+        _accountService = accountService;
+        _movementService = movementService;
     }
 
     // Account Commands
@@ -34,18 +33,12 @@ public class GeneralConsumer :
     {
         try
         {
-            Console.WriteLine($"*** RECEIVED CreateAccountCommand: {context.Message.OperationId} ***");
-            Console.WriteLine($"CustomerId: {context.Message.CustomerId}, AccountType: {context.Message.AccountType}");
+            var result = await _accountService.CreateAsync(context.Message);
 
-            var result = await _accountsController.Create(context.Message);
-
-            Console.WriteLine($"*** SENDING CreateAccount Response: {result.OperationId} ***");
             await context.RespondAsync(result);
-            Console.WriteLine($"*** RESPONSE SENT ***");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"*** ERROR in CreateAccount: {ex.Message} ***");
             await context.RespondAsync(new CreateAccountResponse(
                 OperationId: context.Message.OperationId,
                 Message: ex.Message,
@@ -58,8 +51,7 @@ public class GeneralConsumer :
     {
         try
         {
-            Console.WriteLine($"Processing CloseAccountCommand: {context.Message.OperationId}");
-            var result = await _accountsController.Close(context.Message);
+            var result = await _accountService.CloseAsync(context.Message);
             await context.RespondAsync(result);
         }
         catch (Exception ex)
@@ -77,8 +69,7 @@ public class GeneralConsumer :
     {
         try
         {
-            Console.WriteLine($"Processing DepositCommand: {context.Message.OperationId}");
-            var result = await _movementsController.Deposit(context.Message);
+            var result = await _movementService.DepositAsync(context.Message);
             await context.RespondAsync(result);
         }
         catch (Exception ex)
@@ -95,8 +86,7 @@ public class GeneralConsumer :
     {
         try
         {
-            Console.WriteLine($"Processing WithdrawCommand: {context.Message.OperationId}");
-            var result = await _movementsController.Withdraw(context.Message);
+            var result = await _movementService.WithdrawAsync(context.Message);
             await context.RespondAsync(result);
         }
         catch (Exception ex)
@@ -113,8 +103,7 @@ public class GeneralConsumer :
     {
         try
         {
-            Console.WriteLine($"Processing TransferCommand: {context.Message.OperationId}");
-            var result = await _movementsController.Transfer(context.Message);
+            var result = await _movementService.TransferAsync(context.Message);
             await context.RespondAsync(result);
         }
         catch (Exception ex)
@@ -132,8 +121,7 @@ public class GeneralConsumer :
     {
         try
         {
-            Console.WriteLine($"Processing GetAccountByIdQuery");
-            var result = await _accountsController.GetById(context.Message);
+            var result = await _accountService.GetByIdAsync(context.Message);
             await context.RespondAsync(result);
         }
         catch (Exception ex)
@@ -150,8 +138,7 @@ public class GeneralConsumer :
     {
         try
         {
-            Console.WriteLine($"Processing GetAccountsByCustomerQuery");
-            var result = await _accountsController.GetByCustomer(context.Message);
+            var result = await _accountService.GetByCustomerAsync(context.Message);
             await context.RespondAsync(result);
         }
         catch (Exception ex)
@@ -168,8 +155,7 @@ public class GeneralConsumer :
     {
         try
         {
-            Console.WriteLine($"Processing GetAllAccountsQuery");
-            var result = await _accountsController.GetAll(context.Message);
+            var result = await _accountService.GetAllAsync(context.Message);
             await context.RespondAsync(result);
         }
         catch (Exception ex)
@@ -187,8 +173,7 @@ public class GeneralConsumer :
     {
         try
         {
-            Console.WriteLine($"Processing GetMovementsByAccountQuery");
-            var result = await _movementsController.GetByAccount(context.Message);
+            var result = await _movementService.GetByAccountAsync(context.Message);
             await context.RespondAsync(result);
         }
         catch (Exception ex)
@@ -205,8 +190,7 @@ public class GeneralConsumer :
     {
         try
         {
-            Console.WriteLine($"Processing GetMovementsReportQuery");
-            var result = await _movementsController.GetReport(context.Message);
+            var result = await _movementService.GetReportAsync(context.Message);
             await context.RespondAsync(result);
         }
         catch (Exception ex)

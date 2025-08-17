@@ -15,10 +15,10 @@ services:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: sqlserver
     ports:
-      - "${MSSQL_PORT}:1433"
+      - "${DB_PORT}:1433"
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD}"
+      MSSQL_SA_PASSWORD: "${DB_PASSWORD}"
     volumes:
       - sqlserver-data:/var/opt/mssql
     restart: always
@@ -52,10 +52,11 @@ services:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
-      DATABASE_HOST: ${DATABASE_HOST}
-      DATABASE_NAME: ${DATABASE_NAME_CONSUMER}
-      DATABASE_USER: ${DATABASE_USER}
-      DATABASE_PASSWORD: ${MSSQL_SA_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME_CONSUMER}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -72,10 +73,11 @@ services:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
-      DATABASE_HOST: ${DATABASE_HOST}
-      DATABASE_NAME: ${DATABASE_NAME_ACCOUNT}
-      DATABASE_USER: ${DATABASE_USER}
-      DATABASE_PASSWORD: ${MSSQL_SA_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME_ACCOUNT}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
     depends_on:
       rabbitmq:
         condition: service_healthy

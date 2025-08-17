@@ -1,7 +1,6 @@
 using Customers;
 using MassTransit;
 using Customers.Api.Messaging;
-using Customers.Api.Controllers;
 using DotNetEnv;
 
 Env.Load(".env");
@@ -9,8 +8,7 @@ Env.Load(".env");
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
-builder.Services.AddScoped<CustomersController>();
-builder.Services.AddScoped<AuthController>();
+builder.Services.AddControllers();
 
 builder.Services.AddScoped<IMessagingClient, MassTransitMessagingClient>();
 

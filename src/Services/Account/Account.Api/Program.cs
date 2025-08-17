@@ -1,28 +1,28 @@
-using Account;
 using MassTransit;
 using Account.Api.Messaging;
-using Account.Api.Controllers;
 using DotNetEnv;
+using Microsoft.EntityFrameworkCore;
+using Account.Infrastructure.Persistence;
+using Account.Infrastructure.Repositories;
+using Account.Application.Repositories;
 
 Env.Load(".env");
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
-
-builder.Services.AddScoped<AccountsController>();
-builder.Services.AddScoped<MovementsController>();
+builder.Services.AddControllers();
 
 // RabbitMQ config
 var rabbitHost = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "localhost";
 var rabbitUser = Environment.GetEnvironmentVariable("RABBITMQ_USER") ?? "guest";
 var rabbitPass = Environment.GetEnvironmentVariable("RABBITMQ_PASSWORD") ?? "guest";
 
-builder.Services.AddMassTransit(x =>
+builder.Services.AddMassTransit(options =>
 {
-    x.AddConsumer<GeneralConsumer>();
+    options.AddConsumer<GeneralConsumer>();
 
-    x.UsingRabbitMq((context, cfg) =>
+    options.UsingRabbitMq((context, cfg) =>
     {
         cfg.Host(rabbitHost, host =>
         {
@@ -36,6 +36,32 @@ builder.Services.AddMassTransit(x =>
     });
 });
 
+// SQL Server Config
+var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
+var dbPort = Environment.GetEnvironmentVariable("DB_PORT") ?? "1433";
+var dbName = Environment.GetEnvironmentVariable("DB_NAME") ?? "SofkaAccount";
+var dbUser = Environment.GetEnvironmentVariable("DB_USER") ?? "sa";
+var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD")
+    ?? throw new InvalidOperationException("DB_PASSWORD is required");
+
+var connectionString = $"Server={dbHost},{dbPort};Database={dbName};User Id={dbUser};Password={dbPassword};TrustServerCertificate=true;";
+
+builder.Services.AddDbContext<AccountDbContext>(options =>
+    options.UseSqlServer(
+        connectionString,
+        b => b.MigrationsAssembly("Account.Infrastructure")
+    ));
+
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<IMovementRepository, MovementRepository>();
+
 var app = builder.Build();
+
+// Aplica migraciones automáticamente
+// using (var scope = app.Services.CreateScope())
+// {
+//     var dbContext = scope.ServiceProvider.GetRequiredService<AccountDbContext>();
+//     dbContext.Database.Migrate();
+// }
 
 app.Run();

@@ -2,6 +2,16 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Account.Application\Account.Application.csproj" />
+    <ProjectReference Include="..\Account.Domain\Account.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.8">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.8" />
+    <PackageReference Include="DotNetEnv" Version="3.1.1" />
   </ItemGroup>
 
   <PropertyGroup>

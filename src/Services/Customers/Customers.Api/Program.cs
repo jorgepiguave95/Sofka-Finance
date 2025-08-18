@@ -1,4 +1,3 @@
-using MassTransit;
 using Customers.Api.Messaging;
 using Customers.Application.Interfaces;
 using Customers.Application.Services;
@@ -15,38 +14,34 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 
-builder.Services.AddScoped<IMessagingClient, MassTransitMessagingClient>();
-
 // RabbitMQ config
 var rabbitHost = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "localhost";
 var rabbitUser = Environment.GetEnvironmentVariable("RABBITMQ_USER") ?? "guest";
 var rabbitPass = Environment.GetEnvironmentVariable("RABBITMQ_PASSWORD") ?? "guest";
+var rabbitConnectionString = $"amqp://{rabbitUser}:{rabbitPass}@{rabbitHost}:5672/";
 
-builder.Services.AddMassTransit(x =>
-{
-    x.AddConsumer<GeneralConsumer>();
+// Registrar los consumers RabbitMQ especializados
+builder.Services.AddSingleton(provider =>
+    new AuthRabbitMQConsumer(provider, rabbitConnectionString));
+builder.Services.AddHostedService(provider =>
+    provider.GetRequiredService<AuthRabbitMQConsumer>());
 
-    x.UsingRabbitMq((context, cfg) =>
-    {
-        cfg.Host(rabbitHost, host =>
-        {
-            host.Username(rabbitUser);
-            host.Password(rabbitPass);
-        });
+builder.Services.AddSingleton(provider =>
+    new CustomerRabbitMQConsumer(provider, rabbitConnectionString));
+builder.Services.AddHostedService(provider =>
+    provider.GetRequiredService<CustomerRabbitMQConsumer>());
 
-        cfg.PrefetchCount = 32;
-
-        cfg.ConfigureEndpoints(context);
-    });
-});
+Console.WriteLine($"[Customer Service] RabbitMQ configurado en: {rabbitConnectionString}");
 
 // SQL Server Config
-var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
+var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? throw new InvalidOperationException("DB_HOST is required");
 var dbPort = Environment.GetEnvironmentVariable("DB_PORT") ?? "1433";
-var dbName = Environment.GetEnvironmentVariable("DB_NAME_CUSTOMERS") ?? "SofkaCustomers";
+var dbName = Environment.GetEnvironmentVariable("DB_NAME_CONSUMER") ?? throw new InvalidOperationException("DB_NAME_CONSUMER is required");
 var dbUser = Environment.GetEnvironmentVariable("DB_USER") ?? "sa";
 var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD")
     ?? throw new InvalidOperationException("DB_PASSWORD is required");
+
+Console.WriteLine($"[CONFIG] Conectando a base de datos: {dbName} en {dbHost}:{dbPort}");
 
 var connectionString = $"Server={dbHost},{dbPort};Database={dbName};User Id={dbUser};Password={dbPassword};TrustServerCertificate=true;";
 
@@ -61,5 +56,20 @@ builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
+
+// Aplicar migraciones automáticamente
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<CustomersDbContext>();
+    try
+    {
+        context.Database.Migrate();
+        Console.WriteLine("Migraciones aplicadas exitosamente para CustomerSofka");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error aplicando migraciones: {ex.Message}");
+    }
+}
 
 app.Run();

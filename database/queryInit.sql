@@ -3,7 +3,6 @@
 ---------------------------------------
 IF DB_ID(N'CustomerSofka') IS NULL
 BEGIN
-    PRINT 'Creando base de datos [CustomerSofka]...';
     CREATE DATABASE CustomerSofka;
 END
 GO
@@ -11,22 +10,26 @@ GO
 USE CustomerSofka;
 GO
 
--- Tabla Clientes
-IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'clientes' AND schema_id = SCHEMA_ID('dbo'))
+-- Tabla Clients
+IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'Clients' AND schema_id = SCHEMA_ID('dbo'))
 BEGIN
-    CREATE TABLE dbo.clientes (
-        idCliente          UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-        nombre             VARCHAR(150)     NOT NULL,
-        genero             VARCHAR(20)      NULL,
-        edad               INT              NULL,
-        identificacion     VARCHAR(50)      NOT NULL UNIQUE,
-        direccion          VARCHAR(200)     NULL,
-        telefono           VARCHAR(30)      NULL,
-        contraseña         VARCHAR(200)     NOT NULL,
-        activo             BIT              NOT NULL DEFAULT 1,
-        fechaCreacion      DATETIME2(0)     NOT NULL DEFAULT SYSDATETIME(),
-        fechaActualizacion DATETIME2(0)     NULL
+    CREATE TABLE dbo.Clients (
+        Id                 UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+        Name               NVARCHAR(100)    NOT NULL,
+        Gender             NVARCHAR(10)     NOT NULL,
+        Age                INT              NOT NULL,
+        Identification     NVARCHAR(20)     NOT NULL,
+        Address            NVARCHAR(200)    NOT NULL,
+        Phone              NVARCHAR(15)     NOT NULL,
+        Email              NVARCHAR(100)    NOT NULL,
+        PasswordHash       NVARCHAR(255)    NOT NULL,
+        IsActive           BIT              NOT NULL,
+        CreatedAt          DATETIME2        NOT NULL,
+        UpdatedAt          DATETIME2        NOT NULL
     );
+
+    CREATE UNIQUE INDEX IX_Clients_Email ON dbo.Clients (Email);
+    CREATE UNIQUE INDEX IX_Clients_Identification ON dbo.Clients (Identification);
 END
 GO
 
@@ -36,7 +39,6 @@ GO
 ---------------------------------------
 IF DB_ID(N'AccountSofka') IS NULL
 BEGIN
-    PRINT 'Creando base de datos [AccountSofka]...';
     CREATE DATABASE AccountSofka;
 END
 GO
@@ -44,33 +46,41 @@ GO
 USE AccountSofka;
 GO
 
--- Tabla cuentas
-IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'cuentas' AND schema_id = SCHEMA_ID('dbo'))
+-- Tabla Accounts
+IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'Accounts' AND schema_id = SCHEMA_ID('dbo'))
 BEGIN
-    CREATE TABLE dbo.cuentas (
-        idCuenta           UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-        idCliente          UNIQUEIDENTIFIER NOT NULL,
-        numero             VARCHAR(30)      NOT NULL UNIQUE,
-        tipo               VARCHAR(30)      NOT NULL,
-        saldo              DECIMAL(10,2)    NOT NULL DEFAULT 0,
-        activo             BIT              NOT NULL DEFAULT 1,
-        fechaCreacion      DATETIME2(0)     NOT NULL DEFAULT SYSDATETIME(),
-        fechaActualizacion DATETIME2(0)     NULL
+    CREATE TABLE dbo.Accounts (
+        Id             UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+        CustomerId     UNIQUEIDENTIFIER NOT NULL,
+        AccountNumber  NVARCHAR(30)     NOT NULL,
+        AccountType    NVARCHAR(20)     NOT NULL,
+        Balance        DECIMAL(18,2)    NOT NULL,
+        IsActive       BIT              NOT NULL DEFAULT 1,
+        CreatedAt      DATETIME2        NOT NULL DEFAULT GETUTCDATE(),
+        UpdatedAt      DATETIME2        NULL
     );
+
+    CREATE UNIQUE INDEX IX_Accounts_AccountNumber ON dbo.Accounts (AccountNumber);
 END
 GO
 
--- Tabla movimientos
-IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'movimientos' AND schema_id = SCHEMA_ID('dbo'))
+-- Tabla Movements (basada en EF Core MovementConfiguration)
+IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'Movements' AND schema_id = SCHEMA_ID('dbo'))
 BEGIN
-    CREATE TABLE dbo.movimientos (
-        idMovimiento    UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-        idCuenta        UNIQUEIDENTIFIER NOT NULL,
-        tipo            VARCHAR(20)      NOT NULL,
-        valor           DECIMAL(10,2)    NOT NULL,
-        saldoDisponible DECIMAL(10,2)    NOT NULL,
-        estado          BIT              NOT NULL DEFAULT 1,
-        fecha           DATETIME2(0)     NOT NULL DEFAULT SYSDATETIME()
+    CREATE TABLE dbo.Movements (
+        Id               UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+        AccountId        UNIQUEIDENTIFIER NOT NULL,
+        MovementType     NVARCHAR(20)     NOT NULL,
+        Value            DECIMAL(18,2)    NOT NULL,
+        AvailableBalance DECIMAL(18,2)    NOT NULL,
+        Status           BIT              NOT NULL DEFAULT 1,
+        Date             DATETIME2        NOT NULL,
+        Concept          NVARCHAR(200)    NULL,
+        
+        CONSTRAINT FK_Movements_Accounts_AccountId 
+            FOREIGN KEY (AccountId) REFERENCES dbo.Accounts(Id) ON DELETE NO ACTION
     );
+
+    CREATE INDEX IX_Movements_AccountId ON dbo.Movements (AccountId);
 END
 GO

@@ -1,6 +1,7 @@
 using Account.Application.Repositories;
 using SofkaFinance.Contracts.Accounts;
 using Account.Application.Interfaces;
+using Account.Domain.Errors;
 
 namespace Account.Application.Services;
 
@@ -19,7 +20,22 @@ public class MovementService : IMovementService
     {
         try
         {
-            var movements = await _movementRepository.GetByAccountIdAsync(query.AccountId);
+            if (query.AccountId == Guid.Empty)
+                throw new DomainException(ErrorCodes.ACCOUNT_ID_REQUIRED, "El ID de la cuenta es requerido");
+
+            IEnumerable<Domain.Entities.Movement> movements;
+
+            if (query.StartDate.HasValue && query.EndDate.HasValue)
+            {
+                movements = await _movementRepository.GetByAccountIdAndDateRangeAsync(
+                    query.AccountId,
+                    query.StartDate.Value,
+                    query.EndDate.Value);
+            }
+            else
+            {
+                movements = await _movementRepository.GetByAccountIdAsync(query.AccountId);
+            }
 
             var movementData = movements.Select(m => new
             {
@@ -39,11 +55,19 @@ public class MovementService : IMovementService
                 Movements: movementData.Cast<object>().ToArray()
             );
         }
+        catch (DomainException ex)
+        {
+            return new GetMovementsByAccountResponse(
+                OperationId: query.OperationId,
+                Message: $"Error de negocio: {ex.Message}",
+                Movements: null
+            );
+        }
         catch (Exception ex)
         {
             return new GetMovementsByAccountResponse(
                 OperationId: query.OperationId,
-                Message: ex.Message,
+                Message: $"Error interno del servidor: {ex.Message}",
                 Movements: null
             );
         }
@@ -53,16 +77,22 @@ public class MovementService : IMovementService
     {
         try
         {
+            if (command.AccountId == Guid.Empty)
+                throw new DomainException(ErrorCodes.ACCOUNT_ID_REQUIRED, "El ID de la cuenta es requerido");
+
+            if (command.Amount <= 0)
+                throw new DomainException(ErrorCodes.AMOUNT_INVALID, "El monto del depósito debe ser mayor a cero");
+
+            var concept = string.IsNullOrWhiteSpace(command.Concept) ? "Depósito" : command.Concept;
+
             var account = await _accountRepository.GetByIdAsync(command.AccountId);
             if (account == null)
-            {
-                return new DepositResponse(
-                    OperationId: command.OperationId,
-                    Message: "Cuenta no encontrada"
-                );
-            }
+                throw new DomainException(ErrorCodes.ACCOUNT_NOT_FOUND, "Cuenta no encontrada");
 
-            var movement = account.Deposit(command.Amount, command.Concept);
+            if (!account.IsActive)
+                throw new DomainException(ErrorCodes.ACCOUNT_INACTIVE, "No se pueden realizar operaciones en una cuenta inactiva");
+
+            var movement = account.Deposit(command.Amount, concept);
 
             await _movementRepository.CreateAsync(movement);
             await _accountRepository.UpdateAsync(account);
@@ -74,11 +104,18 @@ public class MovementService : IMovementService
                 NewBalance: account.Balance
             );
         }
+        catch (DomainException ex)
+        {
+            return new DepositResponse(
+                OperationId: command.OperationId,
+                Message: $"Error de negocio: {ex.Message}"
+            );
+        }
         catch (Exception ex)
         {
             return new DepositResponse(
                 OperationId: command.OperationId,
-                Message: ex.Message
+                Message: $"Error interno del servidor: {ex.Message}"
             );
         }
     }
@@ -87,16 +124,25 @@ public class MovementService : IMovementService
     {
         try
         {
+            if (command.AccountId == Guid.Empty)
+                throw new DomainException(ErrorCodes.ACCOUNT_ID_REQUIRED, "El ID de la cuenta es requerido");
+
+            if (command.Amount <= 0)
+                throw new DomainException(ErrorCodes.AMOUNT_INVALID, "El monto del retiro debe ser mayor a cero");
+
+            var concept = string.IsNullOrWhiteSpace(command.Concept) ? "Retiro" : command.Concept;
+
             var account = await _accountRepository.GetByIdAsync(command.AccountId);
             if (account == null)
-            {
-                return new WithdrawResponse(
-                    OperationId: command.OperationId,
-                    Message: "Cuenta no encontrada"
-                );
-            }
+                throw new DomainException(ErrorCodes.ACCOUNT_NOT_FOUND, "Cuenta no encontrada");
 
-            var movement = account.Withdraw(command.Amount, command.Concept);
+            if (!account.IsActive)
+                throw new DomainException(ErrorCodes.ACCOUNT_INACTIVE, "No se pueden realizar operaciones en una cuenta inactiva");
+
+            if (account.Balance < command.Amount)
+                throw new DomainException(ErrorCodes.INSUFFICIENT_BALANCE, "Saldo insuficiente para realizar el retiro");
+
+            var movement = account.Withdraw(command.Amount, concept);
 
             await _movementRepository.CreateAsync(movement);
             await _accountRepository.UpdateAsync(account);
@@ -108,11 +154,18 @@ public class MovementService : IMovementService
                 NewBalance: account.Balance
             );
         }
+        catch (DomainException ex)
+        {
+            return new WithdrawResponse(
+                OperationId: command.OperationId,
+                Message: $"Error de negocio: {ex.Message}"
+            );
+        }
         catch (Exception ex)
         {
             return new WithdrawResponse(
                 OperationId: command.OperationId,
-                Message: ex.Message
+                Message: $"Error interno del servidor: {ex.Message}"
             );
         }
     }
@@ -121,29 +174,42 @@ public class MovementService : IMovementService
     {
         try
         {
+            if (command.FromAccountId == Guid.Empty)
+                throw new DomainException(ErrorCodes.ACCOUNT_ID_REQUIRED, "El ID de la cuenta de origen es requerido");
+
+            if (command.ToAccountId == Guid.Empty)
+                throw new DomainException(ErrorCodes.TARGET_ACCOUNT_REQUIRED, "El ID de la cuenta de destino es requerido");
+
+            if (command.FromAccountId == command.ToAccountId)
+                throw new DomainException(ErrorCodes.SAME_ACCOUNT_TRANSFER, "No se puede transferir a la misma cuenta");
+
+            if (command.Amount <= 0)
+                throw new DomainException(ErrorCodes.AMOUNT_INVALID, "El monto de la transferencia debe ser mayor a cero");
+
+            var concept = string.IsNullOrWhiteSpace(command.Concept) ? "Transferencia" : command.Concept;
+
             var fromAccount = await _accountRepository.GetByIdAsync(command.FromAccountId);
             var toAccount = await _accountRepository.GetByIdAsync(command.ToAccountId);
 
             if (fromAccount == null)
-            {
-                return new TransferResponse(
-                    OperationId: command.OperationId,
-                    Message: "Cuenta de origen no encontrada"
-                );
-            }
+                throw new DomainException(ErrorCodes.ACCOUNT_NOT_FOUND, "Cuenta de origen no encontrada");
 
             if (toAccount == null)
-            {
-                return new TransferResponse(
-                    OperationId: command.OperationId,
-                    Message: "Cuenta de destino no encontrada"
-                );
-            }
+                throw new DomainException(ErrorCodes.ACCOUNT_NOT_FOUND, "Cuenta de destino no encontrada");
+
+            if (!fromAccount.IsActive)
+                throw new DomainException(ErrorCodes.ACCOUNT_INACTIVE, "La cuenta de origen está inactiva");
+
+            if (!toAccount.IsActive)
+                throw new DomainException(ErrorCodes.TARGET_ACCOUNT_INACTIVE, "La cuenta de destino está inactiva");
+
+            if (fromAccount.Balance < command.Amount)
+                throw new DomainException(ErrorCodes.INSUFFICIENT_BALANCE, "Saldo insuficiente en la cuenta de origen");
 
             var (debitMovement, creditMovement) = fromAccount.Transfer(
                 command.Amount,
                 toAccount,
-                command.Concept
+                concept
             );
 
             await _movementRepository.CreateAsync(debitMovement);
@@ -159,11 +225,18 @@ public class MovementService : IMovementService
                 ToAccountNewBalance: toAccount.Balance
             );
         }
+        catch (DomainException ex)
+        {
+            return new TransferResponse(
+                OperationId: command.OperationId,
+                Message: $"Error de negocio: {ex.Message}"
+            );
+        }
         catch (Exception ex)
         {
             return new TransferResponse(
                 OperationId: command.OperationId,
-                Message: ex.Message
+                Message: $"Error interno del servidor: {ex.Message}"
             );
         }
     }
@@ -172,6 +245,12 @@ public class MovementService : IMovementService
     {
         try
         {
+            if (query.AccountId == Guid.Empty)
+                throw new DomainException(ErrorCodes.ACCOUNT_ID_REQUIRED, "El ID de la cuenta es requerido");
+
+            if (query.StartDate > query.EndDate)
+                throw new DomainException(ErrorCodes.AMOUNT_INVALID, "La fecha de inicio no puede ser mayor a la fecha de fin");
+
             var movements = await _movementRepository.GetByAccountIdAndDateRangeAsync(
                 query.AccountId,
                 query.StartDate,
@@ -215,11 +294,18 @@ public class MovementService : IMovementService
                 Movements: movementData.Cast<object>().ToArray()
             );
         }
+        catch (DomainException ex)
+        {
+            return new GetMovementsReportResponse(
+                OperationId: query.OperationId,
+                Message: $"Error de negocio: {ex.Message}"
+            );
+        }
         catch (Exception ex)
         {
             return new GetMovementsReportResponse(
                 OperationId: query.OperationId,
-                Message: ex.Message
+                Message: $"Error interno del servidor: {ex.Message}"
             );
         }
     }

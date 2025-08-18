@@ -6,7 +6,10 @@ public record Gender
 {
     private static readonly string[] ValidGenders = { "Masculino", "Femenino" };
 
-    public string Value { get; }
+    public string Value { get; init; } = default!;
+
+    // Constructor privado para Entity Framework
+    private Gender() { }
 
     public Gender(string value)
     {
@@ -25,7 +28,7 @@ public record Gender
         Value = value;
     }
 
-    public static implicit operator string(Gender gender) => gender.Value;
+    // public static implicit operator string(Gender gender) => gender.Value;
 
     public override string ToString() => Value;
 }

@@ -6,7 +6,10 @@ public record Password
 {
     private const int MinimumLength = 8;
 
-    public string Value { get; }
+    public string Value { get; init; } = default!;
+
+    // Constructor privado para Entity Framework
+    private Password() { }
 
     public Password(string value)
     {
@@ -23,7 +26,7 @@ public record Password
         Value = value;
     }
 
-    public static implicit operator string(Password password) => password.Value;
+    // public static implicit operator string(Password password) => password.Value;
 
     public override string ToString() => "********";
 }

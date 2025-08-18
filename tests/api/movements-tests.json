@@ -1,99 +1,394 @@
 {
-  "baseUrl": "http://localhost:3000",
-  "swaggerUrl": "http://localhost:3000/swagger",
-  "movementTests": {
-    "deposit": {
-      "method": "POST",
-      "endpoint": "/api/movimientos/{accountId}/deposito",
-      "description": "Realizar un depósito",
-      "url": "http://localhost:3000/api/movimientos/660e8400-e29b-41d4-a716-446655440000/deposito",
-      "pathParams": {
-        "accountId": "660e8400-e29b-41d4-a716-446655440000"
-      },
-      "body": {
-        "amount": 1000.0,
-        "concept": "Depósito inicial"
-      },
-      "expectedStatus": 200,
-      "expectedResponse": {
-        "message": "Deposito realizado exitosamente"
-      }
-    },
-    "withdraw": {
-      "method": "POST",
-      "endpoint": "/api/movimientos/{accountId}/retiro",
-      "description": "Realizar un retiro",
-      "url": "http://localhost:3000/api/movimientos/660e8400-e29b-41d4-a716-446655440000/retiro",
-      "pathParams": {
-        "accountId": "660e8400-e29b-41d4-a716-446655440000"
-      },
-      "body": {
-        "amount": 500.0,
-        "concept": "Retiro ATM"
-      },
-      "expectedStatus": 200,
-      "expectedResponse": {
-        "message": "Retiro realizado exitosamente"
-      }
-    },
-    "transfer": {
-      "method": "POST",
-      "endpoint": "/api/movimientos/transferencia",
-      "description": "Realizar una transferencia",
-      "url": "http://localhost:3000/api/movimientos/transferencia",
-      "body": {
-        "fromAccountId": "660e8400-e29b-41d4-a716-446655440000",
-        "toAccountId": "770e8400-e29b-41d4-a716-446655440000",
-        "amount": 250.0,
-        "concept": "Transferencia entre cuentas"
-      },
-      "expectedStatus": 200,
-      "expectedResponse": {
-        "message": "Transferencia realizada exitosamente"
-      }
-    },
-    "getMovementsByAccount": {
-      "method": "GET",
-      "endpoint": "/api/movimientos/cuenta/{accountId}",
-      "description": "Obtener movimientos por cuenta",
-      "url": "http://localhost:3000/api/movimientos/cuenta/660e8400-e29b-41d4-a716-446655440000",
-      "pathParams": {
-        "accountId": "660e8400-e29b-41d4-a716-446655440000"
-      },
-      "expectedStatus": 200,
-      "expectedResponse": {
-        "message": "Movimientos obtenidos exitosamente",
-        "movimientos": []
-      }
-    },
-    "getMovementReport": {
-      "method": "GET",
-      "endpoint": "/api/movimientos/reportes",
-      "description": "Obtener reporte de movimientos",
-      "url": "http://localhost:3000/api/movimientos/reportes?fechaInicio=2025-01-01&fechaFin=2025-12-31",
-      "queryParams": {
-        "fechaInicio": "2025-01-01",
-        "fechaFin": "2025-12-31"
-      },
-      "body": {
-        "idCliente": "550e8400-e29b-41d4-a716-446655440000"
-      },
-      "expectedStatus": 200,
-      "expectedResponse": {
-        "message": "Reporte de movimientos generado exitosamente",
-        "cliente": {},
-        "movimientos": [],
-        "totalDepositos": 0.0,
-        "totalRetiros": 0.0,
-        "montoNeto": 0.0
-      }
-    }
+  "info": {
+    "_postman_id": "d4e5f6g7-h8i9-4567-b890-987654321def",
+    "name": "SofkaFinance - Movements",
+    "description": "Colección para movimientos",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
-  "samples": {
-    "depositCommand": "curl -X POST \"http://localhost:3000/api/movimientos/660e8400-e29b-41d4-a716-446655440000/deposito\" -H \"Content-Type: application/json\" -d '{\"amount\":1000.00,\"concept\":\"Depósito inicial\"}'",
-    "withdrawCommand": "curl -X POST \"http://localhost:3000/api/movimientos/660e8400-e29b-41d4-a716-446655440000/retiro\" -H \"Content-Type: application/json\" -d '{\"amount\":500.00,\"concept\":\"Retiro ATM\"}'",
-    "transferCommand": "curl -X POST \"http://localhost:3000/api/movimientos/transferencia\" -H \"Content-Type: application/json\" -d '{\"fromAccountId\":\"660e8400-e29b-41d4-a716-446655440000\",\"toAccountId\":\"770e8400-e29b-41d4-a716-446655440000\",\"amount\":250.00,\"concept\":\"Transferencia entre cuentas\"}'",
-    "getMovementsByAccountCommand": "curl -X GET \"http://localhost:3000/api/movimientos/cuenta/660e8400-e29b-41d4-a716-446655440000\"",
-    "getMovementReportCommand": "curl -X GET \"http://localhost:3000/api/movimientos/reportes?fechaInicio=2025-01-01&fechaFin=2025-12-31\" -H \"Content-Type: application/json\" -d '{\"idCliente\":\"550e8400-e29b-41d4-a716-446655440000\"}'"
-  }
+  "item": [
+    {
+      "name": "DEPOSITS",
+      "item": [
+        {
+          "name": "Depósito - Jose Lema Ahorro",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000.00,\n  \"concept\": \"Depósito inicial\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/movimientos/2801bd79-ad8c-490f-bc05-0fe7f1282cf8/deposito",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": [
+                "api",
+                "movimientos",
+                "2801bd79-ad8c-490f-bc05-0fe7f1282cf8",
+                "deposito"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Depósito - Carlos Ruiz Corriente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 750.00,\n  \"concept\": \"Depósito salario\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/movimientos/996c216b-1808-4364-8f31-b2bd1df93e91/deposito",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": [
+                "api",
+                "movimientos",
+                "996c216b-1808-4364-8f31-b2bd1df93e91",
+                "deposito"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "WITHDRAWALS",
+      "item": [
+        {
+          "name": "Retiro - Jose Lema Ahorro",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 200.00,\n  \"concept\": \"Retiro ATM\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/movimientos/2801bd79-ad8c-490f-bc05-0fe7f1282cf8/retiro",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": [
+                "api",
+                "movimientos",
+                "2801bd79-ad8c-490f-bc05-0fe7f1282cf8",
+                "retiro"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Retiro - Carlos Ruiz Corriente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 300.00,\n  \"concept\": \"Gastos personales\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/movimientos/996c216b-1808-4364-8f31-b2bd1df93e91/retiro",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": [
+                "api",
+                "movimientos",
+                "996c216b-1808-4364-8f31-b2bd1df93e91",
+                "retiro"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "TRANSFERS",
+      "item": [
+        {
+          "name": "Transferencia - Jose Lema a Carlos Ruiz",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromAccountId\": \"2801bd79-ad8c-490f-bc05-0fe7f1282cf8\",\n  \"toAccountId\": \"996c216b-1808-4364-8f31-b2bd1df93e91\",\n  \"amount\": 150.00,\n  \"concept\": \"Pago préstamo\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/movimientos/transferencia",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "movimientos", "transferencia"]
+            }
+          }
+        },
+        {
+          "name": "Transferencia - Carlos Corriente a Carlos Ahorro",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromAccountId\": \"996c216b-1808-4364-8f31-b2bd1df93e91\",\n  \"toAccountId\": \"99c4debc-2123-43f6-8f7e-cc275e50e8ba\",\n  \"amount\": 100.00,\n  \"concept\": \"Ahorro automático\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/movimientos/transferencia",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "movimientos", "transferencia"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET MOVEMENTS",
+      "item": [
+        {
+          "name": "Movimientos - Jose Lema Ahorro",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/movimientos/cuenta/2801bd79-ad8c-490f-bc05-0fe7f1282cf8",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": [
+                "api",
+                "movimientos",
+                "cuenta",
+                "2801bd79-ad8c-490f-bc05-0fe7f1282cf8"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Movimientos - Carlos Ruiz Corriente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/movimientos/cuenta/996c216b-1808-4364-8f31-b2bd1df93e91",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": [
+                "api",
+                "movimientos",
+                "cuenta",
+                "996c216b-1808-4364-8f31-b2bd1df93e91"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "REPORTS",
+      "item": [
+        {
+          "name": "Reporte - Jose Lema - Agosto 2025",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fechaInicio\": \"2025-08-01T00:00:00\",\n  \"fechaFin\": \"2025-08-31T23:59:59\",\n  \"idCliente\": \"fa234d11-f191-4be1-883c-1d08c6ac4a79\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/movimientos/reportes",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "movimientos", "reportes"]
+            }
+          }
+        },
+        {
+          "name": "Reporte - Carlos Ruiz - Agosto 2025",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fechaInicio\": \"2025-08-01T00:00:00\",\n  \"fechaFin\": \"2025-08-31T23:59:59\",\n  \"idCliente\": \"b68407f8-6a8e-4138-bb46-25ca40e84c81\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/movimientos/reportes",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "movimientos", "reportes"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "CASOS DE ERROR",
+      "item": [
+        {
+          "name": "Retiro Efectivo - Cuenta 478758",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 575.00,\n  \"concept\": \"Retiro en efectivo\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/movimientos/2801bd79-ad8c-490f-bc05-0fe7f1282cf8/retiro",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": [
+                "api",
+                "movimientos",
+                "2801bd79-ad8c-490f-bc05-0fe7f1282cf8",
+                "retiro"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Depósito Nómina - Cuenta 225487",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 600.00,\n  \"concept\": \"Depósito nómina\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/movimientos/996c216b-1808-4364-8f31-b2bd1df93e91/deposito",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": [
+                "api",
+                "movimientos",
+                "996c216b-1808-4364-8f31-b2bd1df93e91",
+                "deposito"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Depósito Transferencia - Cuenta 495878",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 150.00,\n  \"concept\": \"Transferencia recibida\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/movimientos/99c4debc-2123-43f6-8f7e-cc275e50e8ba/deposito",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": [
+                "api",
+                "movimientos",
+                "99c4debc-2123-43f6-8f7e-cc275e50e8ba",
+                "deposito"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Retiro Completo - Cuenta 496825",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 540.00,\n  \"concept\": \"Cierre de cuenta\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/movimientos/996c216b-1808-4364-8f31-b2bd1df93e91/retiro",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": [
+                "api",
+                "movimientos",
+                "996c216b-1808-4364-8f31-b2bd1df93e91",
+                "retiro"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
 }

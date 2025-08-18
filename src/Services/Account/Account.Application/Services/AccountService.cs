@@ -3,6 +3,7 @@ using Account.Application.Repositories;
 using Account.Domain.Entities;
 using Account.Domain.ValueObjects;
 using SofkaFinance.Contracts.Accounts;
+using Account.Domain.Errors;
 
 namespace Account.Application.Services;
 
@@ -19,26 +20,23 @@ public class AccountService : IAccountService
     {
         try
         {
+            if (query.AccountId == Guid.Empty)
+                throw new DomainException(ErrorCodes.ACCOUNT_ID_REQUIRED, "El ID de la cuenta es requerido");
+
             var account = await _accountRepository.GetByIdAsync(query.AccountId);
 
             if (account == null)
-            {
-                return new GetAccountResponse(
-                    OperationId: query.OperationId,
-                    Message: "Cuenta no encontrada",
-                    Account: null
-                );
-            }
+                throw new DomainException(ErrorCodes.ACCOUNT_NOT_FOUND, "Cuenta no encontrada");
 
             var accountObject = new
             {
-                AccountId = account.Id,
-                CustomerId = account.CustomerId,
-                AccountNumber = account.Number.Value,
-                AccountType = account.Type.Value,
-                Balance = account.Balance,
-                IsActive = account.IsActive,
-                CreatedAt = account.CreatedAt
+                Id = account.Id,
+                IdCliente = account.CustomerId,
+                NumeroCuenta = account.Number.Value,
+                TipoCuenta = account.Type.Value,
+                Saldo = account.Balance,
+                EstaActiva = account.IsActive,
+                FechaCreacion = account.CreatedAt
             };
 
             return new GetAccountResponse(
@@ -47,11 +45,19 @@ public class AccountService : IAccountService
                 Account: accountObject
             );
         }
+        catch (DomainException ex)
+        {
+            return new GetAccountResponse(
+                OperationId: query.OperationId,
+                Message: $"Error de negocio: {ex.Message}",
+                Account: null
+            );
+        }
         catch (Exception ex)
         {
             return new GetAccountResponse(
                 OperationId: query.OperationId,
-                Message: ex.Message,
+                Message: $"Error interno del servidor: {ex.Message}",
                 Account: null
             );
         }
@@ -61,6 +67,9 @@ public class AccountService : IAccountService
     {
         try
         {
+            if (query.CustomerId == Guid.Empty)
+                throw new DomainException(ErrorCodes.CUSTOMER_ID_REQUIRED, "El ID del cliente es requerido");
+
             var accounts = await _accountRepository.GetByCustomerIdAsync(query.CustomerId);
 
             var accountObjects = accounts.Select(account => new
@@ -80,11 +89,19 @@ public class AccountService : IAccountService
                 Accounts: accountObjects
             );
         }
+        catch (DomainException ex)
+        {
+            return new GetAccountsByCustomerResponse(
+                OperationId: query.OperationId,
+                Message: $"Error de negocio: {ex.Message}",
+                Accounts: Array.Empty<object>()
+            );
+        }
         catch (Exception ex)
         {
             return new GetAccountsByCustomerResponse(
                 OperationId: query.OperationId,
-                Message: ex.Message,
+                Message: $"Error interno del servidor: {ex.Message}",
                 Accounts: Array.Empty<object>()
             );
         }
@@ -98,14 +115,13 @@ public class AccountService : IAccountService
 
             var accountObjects = allAccounts.Select(account => new
             {
-                AccountId = account.Id,
-                CustomerId = account.CustomerId,
-                AccountNumber = account.Number.Value,
-                AccountType = account.Type.Value,
-                Balance = account.Balance,
-                IsActive = account.IsActive,
-                CreatedAt = account.CreatedAt,
-                UpdatedAt = account.UpdatedAt
+                Id = account.Id,
+                IdCliente = account.CustomerId,
+                NumeroCuenta = account.Number.Value,
+                TipoCuenta = account.Type.Value,
+                Saldo = account.Balance,
+                EstaActiva = account.IsActive,
+                FechaCreacion = account.CreatedAt
             }).ToArray();
 
             return new GetAllAccountsResponse(
@@ -114,11 +130,19 @@ public class AccountService : IAccountService
                 Accounts: accountObjects
             );
         }
+        catch (DomainException ex)
+        {
+            return new GetAllAccountsResponse(
+                OperationId: query.OperationId,
+                Message: $"Error de negocio: {ex.Message}",
+                Accounts: Array.Empty<object>()
+            );
+        }
         catch (Exception ex)
         {
             return new GetAllAccountsResponse(
                 OperationId: query.OperationId,
-                Message: ex.Message,
+                Message: $"Error interno del servidor: {ex.Message}",
                 Accounts: Array.Empty<object>()
             );
         }
@@ -129,41 +153,27 @@ public class AccountService : IAccountService
         try
         {
             if (command.CustomerId == Guid.Empty)
-            {
-                return new CreateAccountResponse(
-                    OperationId: command.OperationId,
-                    Message: "El ID del cliente es requerido"
-                );
-            }
+                throw new DomainException(ErrorCodes.CUSTOMER_ID_REQUIRED, "El ID del cliente es requerido");
 
             if (string.IsNullOrWhiteSpace(command.AccountType))
-            {
-                return new CreateAccountResponse(
-                    OperationId: command.OperationId,
-                    Message: "El tipo de cuenta es requerido"
-                );
-            }
+                throw new DomainException(ErrorCodes.ACCOUNT_TYPE_REQUIRED, "El tipo de cuenta es requerido");
 
-            var existingAccounts = await _accountRepository.GetByCustomerIdAsync(command.CustomerId);
-            var hasAccountOfSameType = existingAccounts.Any(acc =>
-                acc.Type.Value.Equals(command.AccountType, StringComparison.OrdinalIgnoreCase) &&
-                acc.IsActive);
+            if (command.AccountType != "Ahorro" && command.AccountType != "Corriente")
+                throw new DomainException(ErrorCodes.ACCOUNT_TYPE_INVALID, "El tipo de cuenta debe ser 'Ahorro' o 'Corriente'");
 
-            if (hasAccountOfSameType)
-            {
-                return new CreateAccountResponse(
-                    OperationId: command.OperationId,
-                    Message: $"El cliente ya tiene una cuenta activa de tipo {command.AccountType}"
-                );
-            }
+            var accountNumber = !string.IsNullOrWhiteSpace(command.AccountNumber)
+                ? command.AccountNumber
+                : await _accountRepository.GenerateAccountNumberAsync();
 
-            var accountNumber = await _accountRepository.GenerateAccountNumberAsync();
+            var existingAccountWithNumber = await _accountRepository.GetByNumberAsync(accountNumber);
+            if (existingAccountWithNumber != null)
+                throw new DomainException(ErrorCodes.ACCOUNT_NUMBER_ALREADY_EXISTS, $"Ya existe una cuenta con el número {accountNumber}");
 
             var account = Account.Domain.Entities.Account.Create(
                 customerId: command.CustomerId,
                 number: new AccountNumber(accountNumber),
                 type: new AccountType(command.AccountType),
-                initialBalance: 0m
+                initialBalance: command.InitialBalance
             );
 
             var createdAccount = await _accountRepository.CreateAsync(account);
@@ -174,11 +184,18 @@ public class AccountService : IAccountService
                 AccountId: createdAccount.Id
             );
         }
+        catch (DomainException ex)
+        {
+            return new CreateAccountResponse(
+                OperationId: command.OperationId,
+                Message: $"Error de negocio: {ex.Message}"
+            );
+        }
         catch (Exception ex)
         {
             return new CreateAccountResponse(
                 OperationId: command.OperationId,
-                Message: ex.Message
+                Message: $"Error interno del servidor: {ex.Message}"
             );
         }
     }
@@ -188,30 +205,18 @@ public class AccountService : IAccountService
         try
         {
             if (command.AccountId == Guid.Empty)
-            {
-                return new CloseAccountResponse(
-                    OperationId: command.OperationId,
-                    Message: "El ID de la cuenta es requerido"
-                );
-            }
+                throw new DomainException(ErrorCodes.ACCOUNT_ID_REQUIRED, "El ID de la cuenta es requerido");
 
             var account = await _accountRepository.GetByIdAsync(command.AccountId);
 
             if (account == null)
-            {
-                return new CloseAccountResponse(
-                    OperationId: command.OperationId,
-                    Message: "Cuenta no encontrada"
-                );
-            }
+                throw new DomainException(ErrorCodes.ACCOUNT_NOT_FOUND, "Cuenta no encontrada");
 
             if (!account.IsActive)
-            {
-                return new CloseAccountResponse(
-                    OperationId: command.OperationId,
-                    Message: "La cuenta ya está cerrada"
-                );
-            }
+                throw new DomainException(ErrorCodes.ACCOUNT_ALREADY_INACTIVE, "La cuenta ya está cerrada");
+
+            if (account.Balance > 0)
+                throw new DomainException(ErrorCodes.ACCOUNT_HAS_BALANCE, "No se puede cerrar una cuenta con saldo positivo");
 
             account.Deactivate();
 
@@ -223,11 +228,18 @@ public class AccountService : IAccountService
                 AccountId: account.Id
             );
         }
+        catch (DomainException ex)
+        {
+            return new CloseAccountResponse(
+                OperationId: command.OperationId,
+                Message: $"Error de negocio: {ex.Message}"
+            );
+        }
         catch (Exception ex)
         {
             return new CloseAccountResponse(
                 OperationId: command.OperationId,
-                Message: ex.Message
+                Message: $"Error interno del servidor: {ex.Message}"
             );
         }
     }

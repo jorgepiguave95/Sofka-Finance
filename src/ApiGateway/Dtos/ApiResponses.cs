@@ -76,13 +76,3 @@ public record MovementsList(
     string Message,
     MovementEntity[] Movimientos
 ) : Response(Message);
-
-
-public record MovementReport(
-    string Message,
-    CustomerEntity Cliente,
-    MovementEntity[] Movimientos,
-    decimal TotalDepositos,
-    decimal TotalRetiros,
-    decimal MontoNeto
-) : Response(Message);

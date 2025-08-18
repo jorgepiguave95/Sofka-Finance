@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Customers.Application.Repositories;
 using Customers.Infrastructure.Persistence;
 using Customers.Domain.Entities;
+using Customers.Domain.ValueObjects;
 
 namespace Customers.Infrastructure.Repositories;
 
@@ -17,19 +18,21 @@ public class ClientRepository : IClientRepository
     public async Task<Client?> GetByIdAsync(Guid id)
     {
         return await _context.Clients
-            .FirstOrDefaultAsync(c => c.Id == id);
+            .FirstOrDefaultAsync(c => c.Id == id && c.IsActive);
     }
 
     public async Task<Client?> GetByEmailAsync(string email)
     {
+        // Ahora podemos usar el Value Object directamente con los conversores
+        var emailVo = new Email(email);
         return await _context.Clients
-            .FirstOrDefaultAsync(c => c.Email.Value == email);
+            .FirstOrDefaultAsync(c => c.Email == emailVo && c.IsActive);
     }
 
     public async Task<Client?> GetByIdentificationAsync(string identification)
     {
         return await _context.Clients
-            .FirstOrDefaultAsync(c => c.Identification == identification);
+            .FirstOrDefaultAsync(c => c.Identification == identification && c.IsActive);
     }
 
     public async Task<IEnumerable<Client>> GetAllAsync()
@@ -60,12 +63,15 @@ public class ClientRepository : IClientRepository
 
     public async Task<bool> ExistsByEmailAsync(string email)
     {
+        // Ahora podemos usar el Value Object directamente con los conversores
+        var emailVo = new Email(email);
         return await _context.Clients
-            .AnyAsync(c => c.Email.Value == email);
+            .AnyAsync(c => c.Email == emailVo);
     }
 
     public async Task<bool> ExistsByIdentificationAsync(string identification)
     {
+        // Esta comparación debería funcionar porque Identification es string directamente
         return await _context.Clients
             .AnyAsync(c => c.Identification == identification);
     }

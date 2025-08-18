@@ -1,81 +1,414 @@
 {
-  "baseUrl": "http://localhost:3000",
-  "swaggerUrl": "http://localhost:3000/swagger",
-  "accountTests": {
-    "createAccount": {
-      "method": "POST",
-      "endpoint": "/api/cuentas",
-      "description": "Crear una nueva cuenta",
-      "url": "http://localhost:3000/api/cuentas",
-      "body": {
-        "customerId": "550e8400-e29b-41d4-a716-446655440000",
-        "accountType": "Ahorros"
-      },
-      "expectedStatus": 200,
-      "expectedResponse": {
-        "message": "Cuenta creada exitosamente",
-        "cuenta": {
-          "id": "guid",
-          "idCliente": "550e8400-e29b-41d4-a716-446655440000",
-          "numeroCuenta": "ACC-20250816-XXXXXXXX",
-          "tipoCuenta": "Ahorros",
-          "saldo": 0.0,
-          "estaActiva": true,
-          "fechaCreacion": "2025-08-16T00:00:00Z"
-        }
-      }
-    },
-    "getAllAccounts": {
-      "method": "GET",
-      "endpoint": "/api/cuentas",
-      "description": "Obtener todas las cuentas",
-      "url": "http://localhost:3000/api/cuentas",
-      "expectedStatus": 200,
-      "expectedResponse": {
-        "message": "Cuentas obtenidas exitosamente",
-        "cuentas": []
-      }
-    },
-    "getAccountById": {
-      "method": "GET",
-      "endpoint": "/api/cuentas/{accountId}",
-      "description": "Obtener cuenta por ID",
-      "url": "http://localhost:3000/api/cuentas/660e8400-e29b-41d4-a716-446655440000",
-      "pathParams": {
-        "accountId": "660e8400-e29b-41d4-a716-446655440000"
-      },
-      "expectedStatus": 200,
-      "expectedResponse": {
-        "message": "Cuenta obtenida exitosamente",
-        "cuenta": {
-          "id": "660e8400-e29b-41d4-a716-446655440000",
-          "idCliente": "guid",
-          "numeroCuenta": "ACC-20250815-AAAAAAAA",
-          "tipoCuenta": "Ahorros",
-          "saldo": 1000.0,
-          "estaActiva": true,
-          "fechaCreacion": "2025-08-16T00:00:00Z"
-        }
-      }
-    },
-    "closeAccount": {
-      "method": "DELETE",
-      "endpoint": "/api/cuentas/{accountId}",
-      "description": "Cerrar cuenta",
-      "url": "http://localhost:3000/api/cuentas/660e8400-e29b-41d4-a716-446655440000",
-      "pathParams": {
-        "accountId": "660e8400-e29b-41d4-a716-446655440000"
-      },
-      "expectedStatus": 200,
-      "expectedResponse": {
-        "message": "Cuenta cerrada exitosamente"
-      }
-    }
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-4789-a012-123456789abc",
+    "name": "SofkaFinance - Accounts",
+    "description": "Colección para cuentas",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
-  "samples": {
-    "createAccountCommand": "curl -X POST \"http://localhost:3000/api/cuentas\" -H \"Content-Type: application/json\" -d '{\"customerId\":\"550e8400-e29b-41d4-a716-446655440000\",\"accountType\":\"Ahorros\"}'",
-    "getAllAccountsCommand": "curl -X GET \"http://localhost:3000/api/cuentas\"",
-    "getAccountByIdCommand": "curl -X GET \"http://localhost:3000/api/cuentas/660e8400-e29b-41d4-a716-446655440000\"",
-    "closeAccountCommand": "curl -X DELETE \"http://localhost:3000/api/cuentas/660e8400-e29b-41d4-a716-446655440000\""
-  }
+  "item": [
+    {
+      "name": "CREATE",
+      "item": [
+        {
+          "name": "Crear Cuenta Ahorro - Jose Lema",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"fa234d11-f191-4be1-883c-1d08c6ac4a79\",\n  \"accountType\": \"Ahorro\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/cuentas",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "cuentas"]
+            }
+          }
+        },
+        {
+          "name": "Crear Cuenta Corriente - Carlos Ruiz",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"b68407f8-6a8e-4138-bb46-25ca40e84c81\",\n  \"accountType\": \"Corriente\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/cuentas",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "cuentas"]
+            }
+          }
+        },
+        {
+          "name": "Crear Cuenta Ahorro - Marianela Montalvo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"5e22fbba-99dc-4a5e-a7c4-5bfc0c570365\",\n  \"accountType\": \"Ahorro\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/cuentas",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "cuentas"]
+            }
+          }
+        },
+        {
+          "name": "Crear Cuenta con Saldo Inicial",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"5e22fbba-99dc-4a5e-a7c4-5bfc0c570365\",\n  \"accountType\": \"Ahorro\",\n  \"initialBalance\": 1500.00\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/cuentas",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "cuentas"]
+            }
+          }
+        },
+        {
+          "name": "Crear Cuenta con Número Específico",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"fa234d11-f191-4be1-883c-1d08c6ac4a79\",\n  \"accountType\": \"Corriente\",\n  \"accountNumber\": \"987654\",\n  \"initialBalance\": 2000.50\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/cuentas",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "cuentas"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "CREATE",
+      "item": [
+        {
+          "name": "Jose Lema - Ahorro 478758 - Saldo 2000",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"fa234d11-f191-4be1-883c-1d08c6ac4a79\",\n  \"accountType\": \"Ahorro\",\n  \"accountNumber\": \"478758\",\n  \"initialBalance\": 2000.0\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/cuentas",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "cuentas"]
+            }
+          }
+        },
+        {
+          "name": "Marianela - Corriente 225487 - Saldo 100",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"5e22fbba-99dc-4a5e-a7c4-5bfc0c570365\",\n  \"accountType\": \"Corriente\",\n  \"accountNumber\": \"225487\",\n  \"initialBalance\": 100.0\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/cuentas",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "cuentas"]
+            }
+          }
+        },
+        {
+          "name": "Jose Lema - Corriente 585545 - Saldo 1000",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"fa234d11-f191-4be1-883c-1d08c6ac4a79\",\n  \"accountType\": \"Corriente\",\n  \"accountNumber\": \"585545\",\n  \"initialBalance\": 1000.0\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/cuentas",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "cuentas"]
+            }
+          }
+        },
+        {
+          "name": "Marianela - Segunda Cuenta Ahorro - Saldo 540",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"5e22fbba-99dc-4a5e-a7c4-5bfc0c570365\",\n  \"accountType\": \"Ahorro\",\n  \"initialBalance\": 540.0\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/cuentas",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "cuentas"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "CREATE - Casos de Error",
+      "item": [
+        {
+          "name": "Tipo de cuenta inválido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"fa234d11-f191-4be1-883c-1d08c6ac4a79\",\n  \"accountType\": \"Ahorros\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/cuentas",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "cuentas"]
+            }
+          }
+        },
+        {
+          "name": "Cliente inexistente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"00000000-0000-0000-0000-000000000000\",\n  \"accountType\": \"Ahorro\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/cuentas",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "cuentas"]
+            }
+          }
+        },
+        {
+          "name": "Número de cuenta duplicado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"b68407f8-6a8e-4138-bb46-25ca40e84c81\",\n  \"accountType\": \"Ahorro\",\n  \"accountNumber\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/cuentas",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "cuentas"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET ALL",
+      "item": [
+        {
+          "name": "Obtener Todas las Cuentas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/cuentas",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "cuentas"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET BY ID",
+      "item": [
+        {
+          "name": "Obtener Cuenta Jose Lema - Ahorro",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/cuentas/2801bd79-ad8c-490f-bc05-0fe7f1282cf8",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "cuentas", "2801bd79-ad8c-490f-bc05-0fe7f1282cf8"]
+            }
+          }
+        },
+        {
+          "name": "Obtener Cuenta Carlos Ruiz - Corriente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/cuentas/996c216b-1808-4364-8f31-b2bd1df93e91",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "cuentas", "996c216b-1808-4364-8f31-b2bd1df93e91"]
+            }
+          }
+        },
+        {
+          "name": "Obtener Cuenta Carlos Ruiz - Ahorro",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/cuentas/99c4debc-2123-43f6-8f7e-cc275e50e8ba",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "cuentas", "99c4debc-2123-43f6-8f7e-cc275e50e8ba"]
+            }
+          }
+        },
+        {
+          "name": "Cuenta no encontrada",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/cuentas/00000000-0000-0000-0000-000000000000",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "cuentas", "00000000-0000-0000-0000-000000000000"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "DELETE",
+      "item": [
+        {
+          "name": "Eliminar Cuenta Carlos Ruiz - Ahorro",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/cuentas/99c4debc-2123-43f6-8f7e-cc275e50e8ba",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "cuentas", "99c4debc-2123-43f6-8f7e-cc275e50e8ba"]
+            }
+          }
+        },
+        {
+          "name": "Error - Eliminar cuenta con saldo",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/cuentas/daf9822b-3b41-4134-98eb-131bc5facbed",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "cuentas", "daf9822b-3b41-4134-98eb-131bc5facbed"]
+            }
+          }
+        }
+      ]
+    }
+  ]
 }

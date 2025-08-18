@@ -7,7 +7,10 @@ public record Age
     private const int MinimumAge = 18;
     private const int MaximumAge = 90;
 
-    public int Value { get; }
+    public int Value { get; init; }
+
+    // Constructor privado para Entity Framework
+    private Age() { }
 
     public Age(int value)
     {
@@ -24,7 +27,7 @@ public record Age
         Value = value;
     }
 
-    public static implicit operator int(Age age) => age.Value;
+    // public static implicit operator int(Age age) => age.Value;
 
     public override string ToString() => Value.ToString();
 }

@@ -33,14 +33,18 @@ public class MovementRepository : IMovementRepository
         DateTime startDate,
         DateTime endDate)
     {
-        return await _context.Movements
-            .Where(m => m.AccountId == accountId
-                && m.Date >= startDate
-                && m.Date <= endDate)
+        var allMovements = await _context.Movements
+            .Where(m => m.AccountId == accountId)
             .OrderByDescending(m => m.Date)
             .ToListAsync();
-    }
 
+        var filteredMovements = allMovements.Where(m =>
+            m.Date.Date >= startDate.Date &&
+            m.Date.Date <= endDate.Date
+        ).ToList();
+
+        return filteredMovements;
+    }
     public async Task<Movement> CreateAsync(Movement movement)
     {
         _context.Movements.Add(movement);

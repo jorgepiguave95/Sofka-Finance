@@ -32,8 +32,15 @@ public static class ErrorCodes
     public const string CustomerEmailRequired = "CUSTOMER_EMAIL_REQUIRED";
     public const string CustomerEmailInvalid = "CUSTOMER_EMAIL_INVALID";
     public const string CustomerEmailTooLong = "CUSTOMER_EMAIL_TOO_LONG";
+    public const string CustomerEmailAlreadyExists = "CUSTOMER_EMAIL_ALREADY_EXISTS";
 
     // Customer Password
     public const string CustomerPasswordRequired = "CUSTOMER_PASSWORD_REQUIRED";
     public const string CustomerPasswordTooShort = "CUSTOMER_PASSWORD_TOO_SHORT";
+
+    // Customer Identification
+    public const string CustomerIdentificationAlreadyExists = "CUSTOMER_IDENTIFICATION_ALREADY_EXISTS";
+
+    // Customer Not Found
+    public const string CustomerNotFound = "CUSTOMER_NOT_FOUND";
 }

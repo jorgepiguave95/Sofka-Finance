@@ -12,7 +12,10 @@ public record PhoneNumber
     private const int MinDigits = 5;
     private const int MaxDigits = 10;
 
-    public string Value { get; }
+    public string Value { get; init; } = default!;
+
+    // Constructor privado para Entity Framework
+    private PhoneNumber() { }
 
     public PhoneNumber(string value)
     {
@@ -39,7 +42,7 @@ public record PhoneNumber
         Value = value;
     }
 
-    public static implicit operator string(PhoneNumber phone) => phone.Value;
+    // public static implicit operator string(PhoneNumber phone) => phone.Value;
 
     public override string ToString() => Value;
 }

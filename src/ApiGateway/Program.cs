@@ -1,9 +1,6 @@
 using Microsoft.OpenApi.Models;
-using MassTransit;
 using ApiGateway.Messaging;
 using DotNetEnv;
-using SofkaFinance.Contracts.Accounts;
-using SofkaFinance.Contracts.Customers;
 
 Env.Load(".env");
 
@@ -13,46 +10,15 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// RabbitMQ config 
+// RabbitMQ config
 var rabbitHost = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "localhost";
 var rabbitUser = Environment.GetEnvironmentVariable("RABBITMQ_USER") ?? "guest";
 var rabbitPass = Environment.GetEnvironmentVariable("RABBITMQ_PASSWORD") ?? "guest";
+var rabbitConnectionString = $"amqp://{rabbitUser}:{rabbitPass}@{rabbitHost}:5672/";
 
-builder.Services.AddMassTransit(bus =>
-{
-    bus.UsingRabbitMq((context, cfg) =>
-    {
-        cfg.Host(rabbitHost, host =>
-        {
-            host.Username(rabbitUser);
-            host.Password(rabbitPass);
-        });
-
-        cfg.UseTimeout(x => x.Timeout = TimeSpan.FromSeconds(30));
-    });
-
-    // Registrar request accounts
-    bus.AddRequestClient<CreateAccountCommand>();
-    bus.AddRequestClient<GetAccountByIdQuery>();
-    bus.AddRequestClient<GetAllAccountsQuery>();
-    bus.AddRequestClient<GetAccountsByCustomerQuery>();
-    bus.AddRequestClient<CloseAccountCommand>();
-    bus.AddRequestClient<DepositCommand>();
-    bus.AddRequestClient<WithdrawCommand>();
-    bus.AddRequestClient<TransferCommand>();
-    bus.AddRequestClient<GetMovementsByAccountQuery>();
-    bus.AddRequestClient<GetMovementsReportQuery>();
-
-    // Customer request clients
-    bus.AddRequestClient<CreateCustomerCommand>();
-    bus.AddRequestClient<UpdateCustomerCommand>();
-    bus.AddRequestClient<DeleteCustomerCommand>();
-    bus.AddRequestClient<GetCustomerByIdQuery>();
-    bus.AddRequestClient<GetAllCustomersQuery>();
-    bus.AddRequestClient<LoginCommand>();
-});
-
-builder.Services.AddScoped<IMessagingClient, MassTransitMessagingClient>();
+// Registrar el cliente RabbitMQ unificado
+builder.Services.AddSingleton<IMessagingClient>(provider =>
+    new RabbitMQMessagingClient(rabbitConnectionString));
 
 var app = builder.Build();
 

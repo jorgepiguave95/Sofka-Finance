@@ -6,7 +6,7 @@ namespace Account.Domain.ValueObjects;
 public record AccountNumber
 {
     private static readonly Regex NumberRegex = new(@"^[0-9]+$", RegexOptions.Compiled);
-    private const int MinLength = 8;
+    private const int MinLength = 6;
     private const int MaxLength = 10;
 
     public string Value { get; }

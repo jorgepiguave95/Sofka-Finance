@@ -11,7 +11,10 @@ public record Email
 
     private const int MaxLength = 100;
 
-    public string Value { get; }
+    public string Value { get; init; } = default!;
+
+    // Constructor privado para Entity Framework
+    private Email() { }
 
     public Email(string value)
     {
@@ -33,7 +36,7 @@ public record Email
         Value = value.ToLowerInvariant();
     }
 
-    public static implicit operator string(Email email) => email.Value;
+    // public static implicit operator string(Email email) => email.Value;
 
     public override string ToString() => Value;
 

@@ -95,18 +95,37 @@ public class AccountsController : ControllerBase
         try
         {
             var operationId = Guid.NewGuid();
-            var command = new CreateAccountCommand(operationId, dto.CustomerId, dto.AccountType);
+            var command = new CreateAccountCommand(operationId, dto.CustomerId, dto.AccountType, dto.AccountNumber, dto.InitialBalance);
 
             var contractResponse = await _client.RequestAsync<CreateAccountCommand, CreateAccountResponse>(command);
 
             if (contractResponse.AccountId.HasValue)
             {
-                var gatewayResponse = new Account(
+                var getAccountQuery = new GetAccountByIdQuery(Guid.NewGuid(), contractResponse.AccountId.Value);
+                var accountResponse = await _client.RequestAsync<GetAccountByIdQuery, GetAccountResponse>(getAccountQuery);
+
+                if (accountResponse.Account != null)
+                {
+                    var json = JsonSerializer.Serialize(accountResponse.Account);
+                    var accountData = JsonSerializer.Deserialize<AccountEntity>(json);
+
+                    if (accountData != null)
+                    {
+                        var gatewayResponse = new Account(
+                            Message: "Cuenta creada exitosamente",
+                            Cuenta: accountData
+                        );
+
+                        return Ok(gatewayResponse);
+                    }
+                }
+
+                var fallbackResponse = new Account(
                     Message: "Cuenta creada exitosamente",
                     Cuenta: new AccountEntity(
                         Id: contractResponse.AccountId.Value,
                         IdCliente: dto.CustomerId,
-                        NumeroCuenta: $"ACC-{DateTime.Now:yyyyMMdd}-{Guid.NewGuid().ToString()[..8].ToUpper()}",
+                        NumeroCuenta: "Generado",
                         TipoCuenta: dto.AccountType,
                         Saldo: 0.00m,
                         EstaActiva: true,
@@ -114,7 +133,7 @@ public class AccountsController : ControllerBase
                     )
                 );
 
-                return Ok(gatewayResponse);
+                return Ok(fallbackResponse);
             }
 
             return BadRequest(new Response(contractResponse.Message));
@@ -145,6 +164,44 @@ public class AccountsController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, new Response($"Error procesando cierre de cuenta: {ex.Message}"));
+        }
+    }
+
+    [HttpGet("cliente/{customerId:guid}")]
+    public async Task<ActionResult<AccountsList>> GetAccountsByCustomer(Guid customerId)
+    {
+        try
+        {
+            var operationId = Guid.NewGuid();
+            var query = new GetAccountsByCustomerQuery(operationId, customerId);
+
+            var contractResponse = await _client.RequestAsync<GetAccountsByCustomerQuery, GetAccountsByCustomerResponse>(query);
+
+            if (contractResponse.Accounts != null)
+            {
+                var accountEntities = contractResponse.Accounts.Select(account =>
+                {
+                    var json = JsonSerializer.Serialize(account);
+                    var accountData = JsonSerializer.Deserialize<AccountEntity>(json);
+
+                    if (accountData == null) return null;
+
+                    return accountData;
+                }).Where(x => x != null).Cast<AccountEntity>().ToArray();
+
+                var gatewayResponse = new AccountsList(
+                    Message: "Cuentas del cliente obtenidas exitosamente",
+                    Cuentas: accountEntities
+                );
+
+                return Ok(gatewayResponse);
+            }
+
+            return BadRequest(new Response(contractResponse.Message));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new Response($"Error procesando consulta de cuentas: {ex.Message}"));
         }
     }
 }

@@ -6,7 +6,10 @@ public record Address
 {
     private const int MinimumLength = 15;
 
-    public string Value { get; }
+    public string Value { get; init; } = default!;
+
+    // Constructor privado para Entity Framework
+    private Address() { }
 
     public Address(string value)
     {
@@ -23,7 +26,7 @@ public record Address
         Value = value;
     }
 
-    public static implicit operator string(Address address) => address.Value;
+    // public static implicit operator string(Address address) => address.Value;
 
     public override string ToString() => Value;
 }

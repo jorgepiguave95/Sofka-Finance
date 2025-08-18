@@ -1,5 +1,19 @@
 namespace SofkaFinance.Contracts.Customers;
 
+public record CustomerData(
+    Guid Id,
+    string Name,
+    string Gender,
+    int Age,
+    string Identification,
+    string Address,
+    string Phone,
+    string Email,
+    bool IsActive,
+    DateTime CreatedAt,
+    DateTime UpdatedAt
+);
+
 public record CreateCustomerResponse(
     Guid OperationId,
     string Message,
@@ -9,13 +23,13 @@ public record CreateCustomerResponse(
 public record GetCustomerResponse(
     Guid OperationId,
     string Message,
-    object? Customer = null
+    CustomerData? Customer = null
 );
 
 public record GetAllCustomersResponse(
     Guid OperationId,
     string Message,
-    object[]? Customers = null
+    CustomerData[]? Customers = null
 );
 
 public record UpdateCustomerResponse(

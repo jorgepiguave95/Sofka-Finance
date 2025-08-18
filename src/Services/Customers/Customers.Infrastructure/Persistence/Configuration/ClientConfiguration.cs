@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Customers.Domain.Entities;
+using Customers.Domain.ValueObjects;
+using Customers.Infrastructure.Persistence.Converters;
 
 namespace Customers.Infrastructure.Persistence.Configuration;
 
@@ -43,62 +45,50 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
             .HasColumnType("datetime2")
             .IsRequired();
 
-        // Configuración de Value Objects
-        builder.OwnsOne(c => c.Gender, gender =>
-        {
-            gender.Property(g => g.Value)
-                .HasColumnName("Gender")
-                .HasColumnType("nvarchar(10)")
-                .HasMaxLength(10)
-                .IsRequired();
-        });
+        // Configuración de Value Objects con ValueConverters personalizados
+        builder.Property(c => c.Gender)
+            .HasColumnName("Gender")
+            .HasColumnType("nvarchar(10)")
+            .HasMaxLength(10)
+            .HasConversion(new GenderValueConverter())
+            .IsRequired();
 
-        builder.OwnsOne(c => c.Age, age =>
-        {
-            age.Property(a => a.Value)
-                .HasColumnName("Age")
-                .HasColumnType("int")
-                .IsRequired();
-        });
+        builder.Property(c => c.Age)
+            .HasColumnName("Age")
+            .HasColumnType("int")
+            .HasConversion(new AgeValueConverter())
+            .IsRequired();
 
-        builder.OwnsOne(c => c.Address, address =>
-        {
-            address.Property(a => a.Value)
-                .HasColumnName("Address")
-                .HasColumnType("nvarchar(200)")
-                .HasMaxLength(200)
-                .IsRequired();
-        });
+        builder.Property(c => c.Address)
+            .HasColumnName("Address")
+            .HasColumnType("nvarchar(200)")
+            .HasMaxLength(200)
+            .HasConversion(new AddressValueConverter())
+            .IsRequired();
 
-        builder.OwnsOne(c => c.Phone, phone =>
-        {
-            phone.Property(p => p.Value)
-                .HasColumnName("Phone")
-                .HasColumnType("nvarchar(15)")
-                .HasMaxLength(15)
-                .IsRequired();
-        });
+        builder.Property(c => c.Phone)
+            .HasColumnName("Phone")
+            .HasColumnType("nvarchar(15)")
+            .HasMaxLength(15)
+            .HasConversion(new PhoneNumberValueConverter())
+            .IsRequired();
 
-        builder.OwnsOne(c => c.Email, email =>
-        {
-            email.Property(e => e.Value)
-                .HasColumnName("Email")
-                .HasColumnType("nvarchar(100)")
-                .HasMaxLength(100)
-                .IsRequired();
+        builder.Property(c => c.Email)
+            .HasColumnName("Email")
+            .HasColumnType("nvarchar(100)")
+            .HasMaxLength(100)
+            .HasConversion(new EmailValueConverter())
+            .IsRequired();
 
-            email.HasIndex(e => e.Value)
-                .IsUnique()
-                .HasDatabaseName("IX_Clients_Email");
-        });
+        builder.HasIndex(c => c.Email)
+            .IsUnique()
+            .HasDatabaseName("IX_Clients_Email");
 
-        builder.OwnsOne(c => c.Password, password =>
-        {
-            password.Property(p => p.Value)
-                .HasColumnName("PasswordHash")
-                .HasColumnType("nvarchar(255)")
-                .HasMaxLength(255)
-                .IsRequired();
-        });
+        builder.Property(c => c.Password)
+            .HasColumnName("PasswordHash")
+            .HasColumnType("nvarchar(255)")
+            .HasMaxLength(255)
+            .HasConversion(new PasswordValueConverter())
+            .IsRequired();
     }
 }

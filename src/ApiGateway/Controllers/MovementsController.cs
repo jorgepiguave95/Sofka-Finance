@@ -98,12 +98,20 @@ public class MovementsController : ControllerBase
                 var movementEntities = contractResponse.Movements.Select(movement =>
                 {
                     var json = JsonSerializer.Serialize(movement);
-                    var movementData = JsonSerializer.Deserialize<MovementEntity>(json);
+                    using var document = JsonDocument.Parse(json);
+                    var root = document.RootElement;
 
-                    if (movementData == null) return null;
-
-                    return movementData;
-                }).Where(x => x != null).Cast<MovementEntity>().ToArray();
+                    return new MovementEntity(
+                        Id: root.TryGetProperty("MovementId", out var movementId) ? movementId.GetGuid() : Guid.Empty,
+                        IdCuenta: root.TryGetProperty("AccountId", out var accountId) ? accountId.GetGuid() : Guid.Empty,
+                        Tipo: root.TryGetProperty("Type", out var type) ? type.GetString() ?? "" : "",
+                        Monto: root.TryGetProperty("Amount", out var amount) ? amount.GetDecimal() : 0,
+                        Concepto: root.TryGetProperty("Concept", out var concept) ? concept.GetString() ?? "" : "",
+                        SaldoAnterior: root.TryGetProperty("PreviousBalance", out var prevBalance) ? prevBalance.GetDecimal() : 0,
+                        SaldoNuevo: root.TryGetProperty("NewBalance", out var newBalance) ? newBalance.GetDecimal() : 0,
+                        FechaCreacion: root.TryGetProperty("CreatedAt", out var createdAt) ? createdAt.GetDateTime() : DateTime.MinValue
+                    );
+                }).ToArray();
 
                 var gatewayResponse = new MovementsList(
                     Message: "Movimientos obtenidos exitosamente",
@@ -121,44 +129,76 @@ public class MovementsController : ControllerBase
         }
     }
 
-    [HttpGet("reportes")]
-    public async Task<ActionResult<MovementsList>> Report(
-        [FromQuery] DateTime fechaInicio,
-        [FromQuery] DateTime fechaFin,
-        [FromQuery] Guid idCliente)
+    [HttpPost("reportes")]
+    public async Task<ActionResult<MovementsList>> Report([FromBody] ReportRequest request)
     {
         try
         {
-            var operationId = Guid.NewGuid();
-            var query = new GetMovementsReportQuery(operationId, idCliente, fechaInicio, fechaFin);
+            var getAccountsOperationId = Guid.NewGuid();
+            var getAccountsQuery = new GetAccountsByCustomerQuery(getAccountsOperationId, request.IdCliente);
 
-            var contractResponse = await _client.RequestAsync<GetMovementsReportQuery, GetMovementsReportResponse>(query);
+            var accountsResponse = await _client.RequestAsync<GetAccountsByCustomerQuery, GetAccountsByCustomerResponse>(getAccountsQuery);
 
-            if (contractResponse.Movements != null)
+            if (accountsResponse?.Accounts == null || !accountsResponse.Accounts.Any())
             {
-                var movementEntities = contractResponse.Movements.Select(movement =>
-                {
-                    var json = JsonSerializer.Serialize(movement);
-                    var movementData = JsonSerializer.Deserialize<MovementEntity>(json);
-
-                    if (movementData == null) return null;
-
-                    return movementData;
-                }).Where(x => x != null).Cast<MovementEntity>().ToArray();
-
-                var gatewayResponse = new MovementsList(
-                    Message: "Movimientos obtenidos exitosamente",
-                    Movimientos: movementEntities
-                );
-
-                return Ok(gatewayResponse);
+                return Ok(new MovementsList(
+                    Message: "No se encontraron cuentas para el cliente",
+                    Movimientos: Array.Empty<MovementEntity>()
+                ));
             }
 
-            return BadRequest(new Response(contractResponse.Message));
+            var allMovements = new List<MovementEntity>();
+
+            foreach (var account in accountsResponse.Accounts)
+            {
+                var movementsOperationId = Guid.NewGuid();
+                var accountJson = JsonSerializer.Serialize(account);
+                using var document = JsonDocument.Parse(accountJson);
+                var root = document.RootElement;
+
+                var accountId = root.TryGetProperty("AccountId", out var idProp) ? idProp.GetGuid() : Guid.Empty;
+
+                if (accountId != Guid.Empty)
+                {
+                    var movementsQuery = new GetMovementsByAccountQuery(movementsOperationId, accountId, request.FechaInicio, request.FechaFin);
+
+                    var movementsResponse = await _client.RequestAsync<GetMovementsByAccountQuery, GetMovementsByAccountResponse>(movementsQuery);
+
+                    if (movementsResponse?.Movements != null)
+                    {
+                        var movementEntities = movementsResponse.Movements.Select(movement =>
+                        {
+                            var json = JsonSerializer.Serialize(movement);
+                            using var doc = JsonDocument.Parse(json);
+                            var movRoot = doc.RootElement;
+
+                            return new MovementEntity(
+                                Id: movRoot.TryGetProperty("MovementId", out var movementId) ? movementId.GetGuid() : Guid.Empty,
+                                IdCuenta: movRoot.TryGetProperty("AccountId", out var accountIdProp) ? accountIdProp.GetGuid() : Guid.Empty,
+                                Tipo: movRoot.TryGetProperty("Type", out var type) ? type.GetString() ?? "" : "",
+                                Monto: movRoot.TryGetProperty("Amount", out var amount) ? amount.GetDecimal() : 0,
+                                Concepto: movRoot.TryGetProperty("Concept", out var concept) ? concept.GetString() ?? "" : "",
+                                SaldoAnterior: movRoot.TryGetProperty("PreviousBalance", out var prevBalance) ? prevBalance.GetDecimal() : 0,
+                                SaldoNuevo: movRoot.TryGetProperty("NewBalance", out var newBalance) ? newBalance.GetDecimal() : 0,
+                                FechaCreacion: movRoot.TryGetProperty("CreatedAt", out var createdAt) ? createdAt.GetDateTime() : DateTime.MinValue
+                            );
+                        });
+
+                        allMovements.AddRange(movementEntities);
+                    }
+                }
+            }
+
+            var gatewayResponse = new MovementsList(
+                Message: $"Reporte generado exitosamente para el cliente {request.IdCliente}. Período: {request.FechaInicio:yyyy-MM-dd} al {request.FechaFin:yyyy-MM-dd}",
+                Movimientos: allMovements.OrderByDescending(m => m.FechaCreacion).ToArray()
+            );
+
+            return Ok(gatewayResponse);
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new Response($"Error procesando consulta de movimientos: {ex.Message}"));
+            return StatusCode(500, new Response($"Error procesando reporte: {ex.Message}"));
         }
     }
 }

@@ -7,10 +7,10 @@
   },
   "item": [
     {
-      "name": "AUTH - Login",
+      "name": "LOGIN",
       "item": [
         {
-          "name": "Login Exitoso - Ejemplo 1",
+          "name": "Login de cliente 1",
           "request": {
             "method": "POST",
             "header": [
@@ -21,19 +21,19 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"carlos.ruiz@email.com\",\n  \"password\": \"Carlos$2025!\"\n}"
+              "raw": "{\n  \"email\": \"jose.lema@email.com\",\n  \"password\": \"Jose2025!\"\n}"
             },
             "url": {
-              "raw": "http://localhost:3000/api/clientes/login",
+              "raw": "http://localhost:3000/api/auth/login",
               "protocol": "http",
               "host": ["localhost"],
               "port": "3000",
-              "path": ["api", "clientes", "login"]
+              "path": ["api", "auth", "login"]
             }
           }
         },
         {
-          "name": "Login Exitoso - Ejemplo 2",
+          "name": "Login de cliente 2",
           "request": {
             "method": "POST",
             "header": [
@@ -44,14 +44,37 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"laura.gomez@email.com\",\n  \"password\": \"LauraG@2025\"\n}"
+              "raw": "{\n  \"email\": \"marianela.montalvo@email.com\",\n  \"password\": \"Marianela2025!\"\n}"
             },
             "url": {
-              "raw": "http://localhost:3000/api/clientes/login",
+              "raw": "http://localhost:3000/api/auth/login",
               "protocol": "http",
               "host": ["localhost"],
               "port": "3000",
-              "path": ["api", "clientes", "login"]
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login de cliente 3",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"juan.osorio@email.com\",\n  \"password\": \"Juan2025!\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/auth/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "auth", "login"]
             }
           }
         }

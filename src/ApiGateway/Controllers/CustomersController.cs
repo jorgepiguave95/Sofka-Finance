@@ -31,7 +31,8 @@ public class CustomersController : ControllerBase
                 body.Password ?? ""
             );
 
-            var contractResponse = await _client.RequestAsync<CreateCustomerCommand, CreateCustomerResponse>(cmd);
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(90));
+            var contractResponse = await _client.RequestAsync<CreateCustomerCommand, CreateCustomerResponse>(cmd, cts.Token);
 
             if (contractResponse.CustomerId.HasValue)
             {
@@ -55,6 +56,10 @@ public class CustomersController : ControllerBase
 
             return BadRequest(new Response(contractResponse.Message));
         }
+        catch (OperationCanceledException)
+        {
+            return StatusCode(408, new Response("Timeout: El servicio tardó demasiado en responder"));
+        }
         catch (Exception ex)
         {
             return StatusCode(500, new Response($"Error procesando creacion de cliente: {ex.Message}"));
@@ -72,18 +77,24 @@ public class CustomersController : ControllerBase
 
             if (contractResponse.Customer != null)
             {
-                var json = JsonSerializer.Serialize(contractResponse.Customer);
-                var customerData = JsonSerializer.Deserialize<CustomerEntity>(json);
+                var customerData = contractResponse.Customer;
 
-                if (customerData != null)
-                {
-                    var gatewayResponse = new Customer(
-                        Message: "Cliente obtenido exitosamente",
-                        Cliente: customerData
-                    );
+                var gatewayResponse = new Customer(
+                    Message: "Cliente obtenido exitosamente",
+                    Cliente: new CustomerEntity(
+                        Id: customerData.Id,
+                        Nombre: customerData.Name,
+                        Correo: customerData.Email,
+                        Telefono: customerData.Phone,
+                        Direccion: customerData.Address,
+                        Identificacion: customerData.Identification,
+                        Genero: customerData.Gender,
+                        Edad: customerData.Age,
+                        FechaCreacion: customerData.CreatedAt
+                    )
+                );
 
-                    return Ok(gatewayResponse);
-                }
+                return Ok(gatewayResponse);
             }
 
             return BadRequest(new Response(contractResponse.Message));
@@ -107,14 +118,18 @@ public class CustomersController : ControllerBase
             if (contractResponse.Customers != null)
             {
                 var customerEntities = contractResponse.Customers.Select(customer =>
-                {
-                    var json = JsonSerializer.Serialize(customer);
-                    var customerData = JsonSerializer.Deserialize<CustomerEntity>(json);
-
-                    if (customerData == null) return null;
-
-                    return customerData;
-                }).Where(x => x != null).Cast<CustomerEntity>().ToArray();
+                    new CustomerEntity(
+                        Id: customer.Id,
+                        Nombre: customer.Name,
+                        Correo: customer.Email,
+                        Telefono: customer.Phone,
+                        Direccion: customer.Address,
+                        Identificacion: customer.Identification,
+                        Genero: customer.Gender,
+                        Edad: customer.Age,
+                        FechaCreacion: customer.CreatedAt
+                    )
+                ).ToArray();
 
                 var gatewayResponse = new CustomersList(
                     Message: "Clientes obtenidos exitosamente",

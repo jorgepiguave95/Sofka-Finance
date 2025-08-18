@@ -21,6 +21,7 @@ services:
       MSSQL_SA_PASSWORD: "${DB_PASSWORD}"
     volumes:
       - sqlserver-data:/var/opt/mssql
+      - ./database/queryInit.sql:/docker-entrypoint-initdb.d/queryInit.sql
     restart: always
     networks: [database]
 
@@ -54,7 +55,7 @@ services:
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
-      DB_NAME: ${DB_NAME_CONSUMER}
+      DB_NAME_CONSUMER: ${DB_NAME_CONSUMER}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
     depends_on:
@@ -62,7 +63,7 @@ services:
         condition: service_healthy
       sqlserver:
         condition: service_started
-    networks: [backend]
+    networks: [backend, database]
 
   accounts:
     build:
@@ -75,7 +76,7 @@ services:
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
-      DB_NAME: ${DB_NAME_ACCOUNT}
+      DB_NAME_ACCOUNT: ${DB_NAME_ACCOUNT}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
     depends_on:
@@ -83,7 +84,7 @@ services:
         condition: service_healthy
       sqlserver:
         condition: service_started
-    networks: [backend]
+    networks: [backend, database]
 
   gateway:
     build:

@@ -61,11 +61,12 @@ public class AccountRepository : IAccountRepository
     public async Task<string> GenerateAccountNumberAsync()
     {
         string accountNumber;
+        var random = new Random();
+
         do
         {
-            var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            var random = new Random().Next(1000, 9999);
-            accountNumber = $"{timestamp}{random}";
+            var number = random.Next(10000000, 100000000);
+            accountNumber = number.ToString();
         }
         while (await _context.Accounts.AnyAsync(a => a.Number.Value == accountNumber));
 

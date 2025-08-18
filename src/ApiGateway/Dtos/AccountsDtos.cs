@@ -3,6 +3,7 @@ namespace ApiGateway.Dtos;
 public record CreateAccountDto(
     Guid CustomerId,
     string AccountType,
+    string? AccountNumber = null,
     decimal InitialBalance = 0
 );
 
@@ -21,8 +22,4 @@ public record TransferDto(
     Guid ToAccountId,
     decimal Amount,
     string? Concept
-);
-
-public record GetMovementReportDto(
-    Guid IdCliente
 );
